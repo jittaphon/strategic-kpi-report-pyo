@@ -7,7 +7,7 @@ const __dirname = dirname(__filename)
 
 
 export default defineConfig({
-
+  base: './',
   build: {
     outDir: resolve(__dirname, '../public'),
     emptyOutDir: true,

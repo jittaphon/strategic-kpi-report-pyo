@@ -6,7 +6,7 @@ export const routes = [{
     element: <MainLayout />,
     children: [
         {
-            path:'/kpi-overview',
+            path:'kpi-overview',
             element: <KPIOverview />,
         }
     ]
