@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-<BrowserRouter basename="/strategic-kpi-report-pyo/public">
+<BrowserRouter basename="/">
     <App />
   </BrowserRouter>
 )
