@@ -1,35 +1,106 @@
 import { useState } from "react";
-import { FiHome, FiFileText, FiSettings, FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import React from 'react'
-export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+import {
+  FiHome,
+  FiFileText,
+  FiSettings,
+  FiChevronDown,
+} from "react-icons/fi";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-  const menuItems = [
-    { icon: <FiHome />, label: "หน้าหลัก" },
-    { icon: <FiFileText />, label: "รายงาน" },
-    { icon: <FiSettings />, label: "ตั้งค่า" },
-  ];
+const menuItems = [
+  {
+    icon: <FiHome />,
+    label: "หน้าหลัก",
+    path: "/",
+  },
+  {
+    icon: <FiFileText />,
+    label: "รายงาน",
+    children: [
+      { label: "KPI จังหวัด", path: "/report/province" },
+      { label: "KPI เขต", path: "/report/region" },
+      { label: "รายงานโรค", path: "/report/disease" },
+    ],
+  },
+  {
+    icon: <FiSettings />,
+    label: "ตั้งค่า",
+    path: "/settings",
+  },
+];
+
+export default function Sidebar() {
+  const [collapsed] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const [reportExpanded, setReportExpanded] = useState(false);
+  const navigate = useNavigate();
+
+  const expanded = hovered || !collapsed;
 
   return (
-
-    <div className={`h-screen bg-white border-r shadow-md transition-all duration-300 ${ collapsed ? "w-16" : "w-64" } flex flex-col`} >
-
-      <div className="flex justify-end p-2">
-        <button className="text-gray-600 hover:text-gray-800 transition" onClick={()=>setCollapsed(!collapsed)} > {collapsed ? <FiChevronRight size={20} /> : <FiChevronLeft size={20} />}</button>
-      </div>
-
-      <nav className="flex-1">
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+      setHovered(false);
+      setReportExpanded(false); // ปิด sub-menu ทันทีเมื่อ mouse ออก
+  }}
+      
+      className={`h-screen border-r bg-white shadow-md flex flex-col transition-all duration-300 ${
+        expanded ? "w-64" : "w-16"
+      }`}
+    >
+      {/* Menu Items */}
+      <nav className="flex-1 mt-4">
         {menuItems.map((item, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition"
-          >
-            <span className="text-blue-600 text-xl">{item.icon}</span>
-            {!collapsed && <span className="text-gray-800">{item.label}</span>}
+          <div key={index}>
+            {/* Main menu item */}
+            <div
+              className="group flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition"
+              onClick={() => {
+                if (item.children) {
+                  setReportExpanded(!reportExpanded);
+                } else if (item.path) {
+                  navigate(item.path);
+                }
+              }}
+            >
+              <span className="text-blue-600 text-xl">{item.icon}</span>
+              <div className="flex-1 flex items-center justify-between">
+                <span
+                  className={`text-gray-800 whitespace-nowrap overflow-hidden transition-opacity duration-300 ${
+                    expanded ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  {item.label}
+                </span>
+                {item.children && expanded && (
+                  <FiChevronDown
+                    className={`text-gray-500 text-sm transition-transform ${
+                      reportExpanded ? "rotate-180" : ""
+                    }`}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Sub-menu items */}
+            {item.children && reportExpanded && expanded && (
+              <div className="ml-10 mt-1 space-y-1">
+                {item.children.map((child, childIndex) => (
+                  <div
+                    key={childIndex}
+                    onClick={() => navigate(child.path)}
+                    className="text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition"
+                  >
+                    {child.label}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </nav>
-      
     </div>
   );
 }
