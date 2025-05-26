@@ -10,8 +10,6 @@ export default function NavBar() {
             <Link to="/" className="text-white text-xl font-bold">
               KPI Health PYO
             </Link>
-
-     
           </div>
 
           

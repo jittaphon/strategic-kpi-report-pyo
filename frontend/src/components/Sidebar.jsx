@@ -6,6 +6,7 @@ import {
   FiChevronDown,
 } from "react-icons/fi";
 import React from "react";
+import { Link } from "react-router";
 import { useNavigate } from "react-router-dom";
 
 const menuItems = [
@@ -18,17 +19,12 @@ const menuItems = [
     icon: <FiFileText />,
     label: "รายงาน",
     children: [
-      { label: "KPI จังหวัด", path: "/report/province" },
+      { label: "KPI จังหวัด", path: "/report/tele_med" },
       { label: "KPI เขต", path: "/report/region" },
-      { label: "รายงานโรค", path: "/report/disease" },
     ],
   },
-  {
-    icon: <FiSettings />,
-    label: "ตั้งค่า",
-    path: "/settings",
-  },
 ];
+
 
 export default function Sidebar() {
   const [collapsed] = useState(true);
@@ -88,13 +84,13 @@ export default function Sidebar() {
             {item.children && reportExpanded && expanded && (
               <div className="ml-10 mt-1 space-y-1">
                 {item.children.map((child, childIndex) => (
-                  <div
+                  <Link
                     key={childIndex}
-                    onClick={() => navigate(child.path)}
-                    className="text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition"
+                    to={child.path}
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded transition"
                   >
                     {child.label}
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
