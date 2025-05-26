@@ -20,7 +20,7 @@ const menuItems = [
     label: "รายงาน",
     children: [
       { label: "KPI จังหวัด", path: "/report/tele_med" },
-      { label: "KPI เขต", path: "/report/region" },
+      { label: "KPI เขต", path: "/report/ncd_registry" },
     ],
   },
 ];
