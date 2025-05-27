@@ -19,8 +19,8 @@ const menuItems = [
     icon: <FiFileText />,
     label: "รายงาน",
     children: [
-      { label: "KPI จังหวัด", path: "/report/tele_med" },
-      { label: "KPI เขต", path: "/report/ncd_registry" },
+      { label: "ให้บริการ การแพทย์ทางไกล (Telemedicine)", path: "/report/tele_med" },
+      { label: "ผลการดำเนินงาน NCD Registry จ.พะเยา", path: "/report/ncd_registry" },
     ],
   },
 ];

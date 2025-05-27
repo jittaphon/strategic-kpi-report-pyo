@@ -1,12 +1,12 @@
-// ✅ แบบที่ถูกต้อง
-import React from 'react' // ← สำคัญ
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import { BrowserRouter } from 'react-router-dom'
-import './index.css'
+// ✅ main.jsx (ใหม่): ใช้ RouterProvider แทน BrowserRouter
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { RouterProvider } from 'react-router-dom';
+import { routes } from './routes';
+import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-<BrowserRouter basename="/">
-    <App />
-  </BrowserRouter>
-)
+  <React.StrictMode>
+    <RouterProvider router={routes} />
+  </React.StrictMode>
+);

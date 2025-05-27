@@ -5,27 +5,26 @@ import KPITable from '../components/KPITable';
 import React, { useEffect, useState } from 'react';
 
 export default function KPIOverview() {
+
   const { type } = useParams();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+
+
   useEffect(() => {
+    
     if (!type || !API[type]) {
       setError(new Error("ไม่พบประเภท API ที่ระบุ"));
       return;
     }
 
-    const controller = new AbortController();
-    const signal = controller.signal;
-
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      setData([]);
-
       try {
-        const response = await API[type].getAppointments({ signal });
+        const response = await API[type].getAppointments();
         setData(response.data);
       } catch (err) {
         if (err.name === 'AbortError') {
@@ -42,7 +41,7 @@ export default function KPIOverview() {
     fetchData();
 
     // 🔁 Cleanup function: ยกเลิก request เดิมถ้ามีการเปลี่ยน type
-    return () => controller.abort();
+    return 
 
   }, [type]);
 
@@ -50,5 +49,5 @@ export default function KPIOverview() {
   if (error) return <div className="text-center text-red-500">❌ {error.message}</div>;
   if (data.length === 0) return <div className="text-center text-gray-500 p-4">📭 ไม่พบข้อมูล</div>;
 
-  return <KPITable type={type} data={data} />;
+  return <KPITable type={type} data={data.data} />;
 }

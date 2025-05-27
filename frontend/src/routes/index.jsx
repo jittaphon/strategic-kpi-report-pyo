@@ -1,17 +1,18 @@
+// ✅ routes.js (หรือ index.jsx) – ใช้ createBrowserRouter แบบถูกต้อง
+import React from "react";
 import KPIOverview from './KPIOverview';
 import MainLayout from '../layouts/MainLayout';
-import React from "react";
+import { createBrowserRouter } from "react-router-dom";
 
-export const routes = [
+export const routes = createBrowserRouter([
   {
     path: '/',
-    element: <MainLayout />, // Layout หลัก ที่มี Navbar, Sidebar
+    element: <MainLayout />, // ✅ Layout หลัก ที่ไม่ re-mount ซ้ำ
     children: [
       {
-        path: 'report/:type',   // เข้าผ่าน /report/tele_med
-        element: <KPIOverview />,  // หรือหน้าอื่นถ้ามี
+        path: 'report/:type',
+        element: <KPIOverview />,
       },
-     
     ],
   },
-];
+]);
