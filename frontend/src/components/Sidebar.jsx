@@ -42,9 +42,11 @@ export default function Sidebar() {
       setReportExpanded(false); // ปิด sub-menu ทันทีเมื่อ mouse ออก
   }}
       
-      className={`h-screen border-r bg-white shadow-md flex flex-col transition-all duration-300 ${
+      className={`min-h-screen border-r bg-white shadow-md flex flex-col transition-all duration-300 ${
         expanded ? "w-64" : "w-16"
       }`}
+
+
     >
       {/* Menu Items */}
       <nav className="flex-1 mt-4">
