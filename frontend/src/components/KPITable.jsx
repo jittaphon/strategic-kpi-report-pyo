@@ -5,7 +5,8 @@ import {
   getSortedRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react"; // ใช้ lucide-react
+import { motion } from "framer-motion";
+import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
 export default function KPITable({ data, columns, renderHeader }) {
   const [sorting, setSorting] = React.useState([]);
@@ -20,13 +21,16 @@ export default function KPITable({ data, columns, renderHeader }) {
   });
 
   return (
-    <div className="p-4">
+    <div className="overflow-x-auto">
       {renderHeader && renderHeader()}
 
       <table className="min-w-full table-auto border mt-4">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="bg-emerald-500 text-white text-sm">
+            <tr
+              key={headerGroup.id}
+              className="bg-emerald-500 text-white text-sm sticky top-0 z-10"
+            >
               {headerGroup.headers.map((header) => {
                 const canSort = header.column.getCanSort();
                 const sortDirection = header.column.getIsSorted();
@@ -58,19 +62,29 @@ export default function KPITable({ data, columns, renderHeader }) {
         </thead>
 
         <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className="hover:bg-green-100">
+          {table.getRowModel().rows.map((row, rowIndex) => (
+            <motion.tr
+              key={row.id}
+              className="hover:bg-green-100"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: rowIndex * 0.05 }}
+            >
               {row.getVisibleCells().map((cell, cellIndex) => (
                 <td
                   key={cell.id}
                   className={`border px-4 py-3 align-middle ${
-                    cellIndex === 0 ? "text-left" : "text-center"
+                    cellIndex === 0
+                      ? "text-left"
+                      : cellIndex === 1
+                      ? "bg-green-100 text-center"
+                      : "text-center"
                   }`}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
-            </tr>
+            </motion.tr>
           ))}
         </tbody>
 
