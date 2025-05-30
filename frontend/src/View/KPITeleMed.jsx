@@ -24,7 +24,7 @@ export default function KPITeleMed() {
   columns={columns}
   renderHeader={() => (
    <div
-  className="p-6 text-xl text-gray-800 bg-cover bg-center rounded-2xl"
+  className="p-6 rounded-2xl border border-green-400 text-xl text-gray-800 bg-cover bg-center rounded-2xl"
   style={{
     backgroundImage: `url('/images/periods.png')`,
   }}
