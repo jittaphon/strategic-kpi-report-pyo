@@ -11,7 +11,6 @@ export function buildColumnsWithFooter(data) {
       if (!isNumericColumn) return "รวมทั้งหมด";
       
       const total = info.table.getRowModel().rows.reduce((sum, row) => sum + (Number(row.getValue(key)) || 0), 0);
-      console.log(total); // Debugging line
 
       return total.toLocaleString();
     };

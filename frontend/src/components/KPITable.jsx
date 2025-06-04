@@ -8,7 +8,7 @@ import {
 import { motion } from "framer-motion";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
-export default function KPITable({ data, columns, renderHeader }) {
+export default function KPITable({ data, columns, renderHeader , extraContent }) {
   const [sorting, setSorting] = React.useState([]);
 
   const table = useReactTable({
@@ -23,8 +23,10 @@ export default function KPITable({ data, columns, renderHeader }) {
   return (
     <div className="overflow-x-auto">
       {renderHeader && renderHeader()}
+       
+     {extraContent && <div className=" grid justify-items-end">{extraContent}</div>}
 
-      <table className="min-w-full table-auto border mt-4">
+      <table className="min-w-full table-auto border mt-3">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr

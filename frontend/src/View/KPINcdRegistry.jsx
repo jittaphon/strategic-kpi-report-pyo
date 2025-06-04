@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { API } from '../api';
 import KPITable from '../components/KPITable';
+import  NcdInputButtonForm  from '../components/NcdInputButtonForm';
 import { getTableConfig } from '../utils/getTableConfig';
 export default function KPITeleMed() {
   const [rawData, setRawData] = useState([]);
@@ -17,7 +18,8 @@ export default function KPITeleMed() {
   if (loading) return <div>🔄 กำลังโหลดข้อมูล...</div>;
 
   return (
-    <KPITable
+   <>
+      <KPITable
       data={data}
       columns={columns}
        renderHeader={() => (
@@ -36,8 +38,16 @@ export default function KPITeleMed() {
     </span>
    
   </div>
+   
+
 </div>
+
       )}
+       extraContent={<NcdInputButtonForm />}
     />
+    
+   </>
+ 
+    
   );
 }
