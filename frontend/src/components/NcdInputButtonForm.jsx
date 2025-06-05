@@ -1,17 +1,21 @@
 import React, { useState } from "react";
+import { API } from '../api';
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const hospitals = [
-  { id: 10717, name: "รพ.พะเยา" },
-  { id: 11184, name: "รพ.จุน" },
-  { id: 11187, name: "รพ.ปง" },
-  { id: 40744, name: "รพ.ภูซาง" },
-  { id: 10718, name: "รพ.เชียงคำ" },
-  { id: 11186, name: "รพ.ดอกคำใต้" },
-  { id: 11188, name: "รพ.แม่ใจ" },
-  { id: 11185, name: "รพ.เชียงม่วน" },
-  { id: 40745, name: "รพ.ภูกามยาว" },
+  { id: 10717, name: "โรงพยาบาล พะเยา" },
+  { id: 11184, name: "โรงพยาบาล จุน" },
+  { id: 11187, name: "โรงพยาบาล ปง" },
+  { id: 40744, name: "โรงพยาบาล ภูซาง" },
+  { id: 10718, name: "โรงพยาบาล เชียงคำ" },
+  { id: 11186, name: "โรงพยาบาล ดอกคำใต้" },
+  { id: 11188, name: "โรงพยาบาล แม่ใจ" },
+  { id: 11185, name: "โรงพยาบาล เชียงม่วน" },
+  { id: 40745, name: "โรงพยาบาล ภูกามยาว" },
 ];
 
 const diseases = [
@@ -24,16 +28,14 @@ const diseases = [
   { id: 7, name: "อ้วนลงพุง (OB)" },
 ];
 
-export default function NcdInputButtonForm() {
+export default function NcdInputButtonForm({ onSuccess }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [hospitalId, setHospitalId] = useState(hospitals[0]?.id || 0);
   const [cases, setCases] = useState(
   Object.fromEntries(diseases.map(d => [d.id, "0"]))
 );
-
-
-
-
 
 const handleChange = (id, value) => {
   // ให้พิมพ์เลขหรือค่าว่างได้
@@ -46,16 +48,15 @@ const handleBlur = (id) => {
     setCases(prev => ({ ...prev, [id]: "0" }));
   }
 };
-
 const resetForm = () => {
   setHospitalId(hospitals[0]?.id || 0);
   setCases(Object.fromEntries(diseases.map(d => [d.id, "0"])));
 };
 
- const handleSubmit = () => {
+const handleConfirmSubmit = async () => {
   const formattedCases = Object.entries(cases).map(([diseaseId, count]) => ({
     disease_id: parseInt(diseaseId, 10),
-    case_count: Number(count) || 0,  // ถ้าเป็น "" หรือ NaN จะได้ 0
+    case_count: Number(count) || 0,
   }));
 
   const payload = {
@@ -63,15 +64,35 @@ const resetForm = () => {
     cases: formattedCases,
   };
 
-  console.log("📝 Form Submitted:", payload);
-  alert("ส่งข้อมูลสำเร็จ (mock)");
-  resetForm(); // <--- reset ค่า
-  setIsOpen(false);
+  try {
+    await API.ncd_registry.postAppointments(payload);
+    if (onSuccess) {
+     await onSuccess(); // ดึงข้อมูลใหม่จากตาราง
+     }
+
+    // แสดงข้อความสำเร็จ
+    setIsSuccess(true);
+
+    // Reset หลังจาก 2 วิ
+    setTimeout(() => {
+      setIsSuccess(false);
+      setIsConfirmOpen(false);
+      setIsOpen(false);
+      resetForm();
+    }, 2000);
+
+  } catch (error) {
+    console.error("❌ ส่งข้อมูลไม่สำเร็จ:", error);
+    toast.error("❌ บันทึกล้มเหลว กรุณาลองใหม่", { icon: "⚠️" });
+    // คุณอาจจะแสดง error message ให้ user ก็ได้ เช่น setError(error.message)
+  }
 };
+
 
 
   return (
     <>
+    <ToastContainer position="top-right" autoClose={2000} />
 <button
   onClick={() => setIsOpen(true)}
   className="relative px-5 py-2 mt-2 font-medium text-white bg-blue-600 rounded-lg overflow-hidden group hover:text-white"
@@ -158,7 +179,7 @@ const resetForm = () => {
                   ❌ ยกเลิก
                 </button>
                 <button
-                  onClick={handleSubmit}
+                  onClick={() => setIsConfirmOpen(true)}
                   className="px-4 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:scale-105 transition-transform shadow-md"
                 >
                   ✅ ส่งข้อมูล
@@ -169,6 +190,73 @@ const resetForm = () => {
         </div>
       </Dialog>
     </Transition>
+<Transition show={isConfirmOpen} as={Fragment}>
+  <Dialog onClose={() => setIsConfirmOpen(false)} className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="flex items-center justify-center min-h-screen bg-black bg-opacity-40 p-4">
+      <Transition.Child
+        as={Fragment}
+        enter="ease-out duration-300"
+        enterFrom="opacity-0 scale-95"
+        enterTo="opacity-100 scale-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100 scale-100"
+        leaveTo="opacity-0 scale-95"
+      >
+        <Dialog.Panel className="bg-white p-6 rounded-2xl shadow-2xl max-w-xl w-full space-y-6">
+          {isSuccess ? (
+            <Transition.Child
+              as={Fragment}
+              enter="transform transition duration-500"
+              enterFrom="opacity-0 scale-90"
+              enterTo="opacity-100 scale-100"
+              leave="transform transition duration-300"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-90"
+            >
+              <div className="text-center text-green-600 font-semibold text-lg py-8">
+                ✅ ส่งข้อมูลเรียบร้อยแล้ว
+              </div>
+            </Transition.Child>
+          ) : (
+            <>
+              <Dialog.Title className="text-lg font-semibold text-gray-800">
+                🧐 ยืนยันข้อมูลก่อนส่ง
+              </Dialog.Title>
+
+              <div>
+                <p className="font-medium text-gray-700 mb-2">
+                  🏥 โรงพยาบาล: {hospitals.find(h => h.id === hospitalId)?.name}
+                </p>
+                <ul className="space-y-1 text-sm text-gray-700">
+                  {diseases.map(d => (
+                    <li key={d.id}>
+                      - {d.name}: <strong>{cases[d.id]}</strong> ราย
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2">
+                <button
+                  onClick={() => setIsConfirmOpen(false)}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+                >
+                  🔙 กลับไปแก้ไข
+                </button>
+                <button
+                  onClick={handleConfirmSubmit}
+                  className="px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition"
+                >
+                  ✅ ยืนยันการส่ง
+                </button>
+              </div>
+            </>
+          )}
+        </Dialog.Panel>
+      </Transition.Child>
+    </div>
+  </Dialog>
+</Transition>
 
     </>
   );

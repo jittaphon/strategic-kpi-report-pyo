@@ -6,11 +6,19 @@ import { getTableConfig } from '../utils/getTableConfig';
 export default function KPITeleMed() {
   const [rawData, setRawData] = useState([]);
   const [loading, setLoading] = useState(true);
+const fetchAppointments = async () => {
+  setLoading(true);
+  try {
+    const res = await API.ncd_registry.getAppointments();
+    setRawData(res.data.data);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  useEffect(() => {
-    API.ncd_registry.getAppointments().then(res => setRawData(res.data.data)).finally(() => setLoading(false));
-  }, []);
-
+useEffect(() => {
+  fetchAppointments();
+}, []);
   const { data, columns } = getTableConfig('ncd_registry',rawData);
 
 
@@ -43,7 +51,7 @@ export default function KPITeleMed() {
 </div>
 
       )}
-       extraContent={<NcdInputButtonForm />}
+      extraContent={<NcdInputButtonForm onSuccess={fetchAppointments}/>}
     />
     
    </>
