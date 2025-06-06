@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useRef } from "react";
 import { API } from '../api';
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
@@ -8,33 +8,34 @@ import { toast } from "react-toastify";
 
 const hospitals = [
   { id: 10717, name: "โรงพยาบาล พะเยา" },
-  { id: 11184, name: "โรงพยาบาล จุน" },
-  { id: 11187, name: "โรงพยาบาล ปง" },
-  { id: 40744, name: "โรงพยาบาล ภูซาง" },
   { id: 10718, name: "โรงพยาบาล เชียงคำ" },
+  { id: 11187, name: "โรงพยาบาล ปง" },
   { id: 11186, name: "โรงพยาบาล ดอกคำใต้" },
-  { id: 11188, name: "โรงพยาบาล แม่ใจ" },
+  { id: 11184, name: "โรงพยาบาล จุน" },
   { id: 11185, name: "โรงพยาบาล เชียงม่วน" },
+  { id: 11188, name: "โรงพยาบาล แม่ใจ" },
+  { id: 40744, name: "โรงพยาบาล ภูซาง" },
   { id: 40745, name: "โรงพยาบาล ภูกามยาว" },
 ];
 
 const diseases = [
-  { id: 1, name: "โรคเบาหวาน (DM)" },
-  { id: 2, name: "ความดันโลหิตสูง (HT)" },
-  { id: 3, name: "หลอดเลือดสมอง (STROKE)" },
-  { id: 4, name: "หัวใจขาดเลือด (IHD)" },
+  { id: 1, name: "โรคเบาหวาน (E10-E14)" },
+  { id: 2, name: "ความดันโลหิตสูง (I10-I14)" },
+  { id: 3, name: "หลอดเลือดสมอง (I60-I69)" },
+  { id: 4, name: "หัวใจขาดเลือด (I20-I25)" },
   { id: 5, name: "ปอดอุดกั้นเรื้อรัง (COPD)" },
-  { id: 6, name: "ไขมันในเลือดสูง (HPL)" },
-  { id: 7, name: "อ้วนลงพุง (OB)" },
+  { id: 6, name: "ไขมันในเลือดสูง (E78)" },
+  { id: 7, name: "อ้วนลงพุง (E66)" },
 ];
 
 export default function NcdInputButtonForm({ onSuccess }) {
+  const inputRefs = useRef([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [hospitalId, setHospitalId] = useState(hospitals[0]?.id || 0);
   const [cases, setCases] = useState(
-  Object.fromEntries(diseases.map(d => [d.id, "0"]))
+  Object.fromEntries(diseases.map(d => [d.id, ""]))
 );
 
 const handleChange = (id, value) => {
@@ -45,12 +46,12 @@ const handleChange = (id, value) => {
 };
 const handleBlur = (id) => {
   if (cases[id] === "") {
-    setCases(prev => ({ ...prev, [id]: "0" }));
+    setCases(prev => ({ ...prev, [id]: "" }));
   }
 };
 const resetForm = () => {
   setHospitalId(hospitals[0]?.id || 0);
-  setCases(Object.fromEntries(diseases.map(d => [d.id, "0"])));
+  setCases(Object.fromEntries(diseases.map(d => [d.id, ""])));
 };
 
 const handleConfirmSubmit = async () => {
@@ -86,6 +87,7 @@ const handleConfirmSubmit = async () => {
     toast.error("❌ บันทึกล้มเหลว กรุณาลองใหม่", { icon: "⚠️" });
     // คุณอาจจะแสดง error message ให้ user ก็ได้ เช่น setError(error.message)
   }
+
 };
 
 
@@ -134,41 +136,76 @@ const handleConfirmSubmit = async () => {
               </div>
 
               {/* Row 2: แบ่ง 2 คอลัมน์ */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Col 1: 4 โรค */}
-                <div className="space-y-4">
-                  {diseases.slice(0, 4).map(d => (
-                    <div key={d.id}>
-                      <label className="block text-sm text-gray-700 mb-1">{d.name}</label>
-                     <input
-  type="number"
-  value={cases[d.id]}
-  onChange={(e) => handleChange(d.id, e.target.value)}
-  onBlur={() => handleBlur(d.id)}
-  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-  min="0"
-/>
-                    </div>
-                  ))}
-                </div>
+          <div className="grid grid-cols-2 gap-6">
+{/* Col 1: 4 โรค */}
+<div className="space-y-4">
+  {diseases.slice(0, 4).map((d, index) => {
+    const globalIndex = index; // 0–3
+    return (
+      <div key={d.id}>
+        <label className="block text-sm text-gray-700 mb-1">
+          {globalIndex + 1}. {d.name}
+        </label>
+        <input
+          ref={el => inputRefs.current[globalIndex] = el}
+          type="number"
+          value={cases[d.id]}
+          onChange={(e) => handleChange(d.id, e.target.value)}
+          onBlur={() => handleBlur(d.id)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              const nextInput = inputRefs.current[globalIndex + 1];
+              if (nextInput) {
+                nextInput.focus();
+              } else {
+                setIsConfirmOpen(true); // ช่องสุดท้าย
+              }
+            }
+          }}
+          className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          min="0"
+        />
+      </div>
+    );
+  })}
+</div>
 
-                {/* Col 2: 3 โรค */}
-                <div className="space-y-4">
-                  {diseases.slice(4, 7).map(d => (
-                    <div key={d.id}>
-                      <label className="block text-sm text-gray-700 mb-1">{d.name}</label>
-                      <input
-  type="number"
-  value={cases[d.id]}
-  onChange={(e) => handleChange(d.id, e.target.value)}
-  onBlur={() => handleBlur(d.id)}
-  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-  min="0"
-/>
-                    </div>
-                  ))}
-                </div>
-              </div>
+{/* Col 2: 3 โรค */}
+<div className="space-y-4">
+  {diseases.slice(4, 7).map((d, index) => {
+    const globalIndex = index + 4; // ต่อจาก Col 1
+    return (
+      <div key={d.id}>
+        <label className="block text-sm text-gray-700 mb-1">
+          {globalIndex + 1}. {d.name}
+        </label>
+        <input
+          ref={el => inputRefs.current[globalIndex] = el}
+          type="number"
+          value={cases[d.id]}
+          onChange={(e) => handleChange(d.id, e.target.value)}
+          onBlur={() => handleBlur(d.id)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              const nextInput = inputRefs.current[globalIndex + 1];
+              if (nextInput) {
+                nextInput.focus();
+              } else {
+                setIsConfirmOpen(true); // ช่องสุดท้าย
+              }
+            }
+          }}
+          className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          min="0"
+        />
+      </div>
+    );
+  })}
+</div>
+</div>
+
 
               {/* ปุ่ม */}
               <div className="flex justify-end space-x-3 pt-2">
@@ -190,6 +227,12 @@ const handleConfirmSubmit = async () => {
         </div>
       </Dialog>
     </Transition>
+
+
+
+
+
+
 <Transition show={isConfirmOpen} as={Fragment}>
   <Dialog onClose={() => setIsConfirmOpen(false)} className="fixed inset-0 z-50 overflow-y-auto">
     <div className="flex items-center justify-center min-h-screen bg-black bg-opacity-40 p-4">
@@ -223,18 +266,24 @@ const handleConfirmSubmit = async () => {
                 🧐 ยืนยันข้อมูลก่อนส่ง
               </Dialog.Title>
 
-              <div>
-                <p className="font-medium text-gray-700 mb-2">
-                  🏥 โรงพยาบาล: {hospitals.find(h => h.id === hospitalId)?.name}
-                </p>
-                <ul className="space-y-1 text-sm text-gray-700">
-                  {diseases.map(d => (
-                    <li key={d.id}>
-                      - {d.name}: <strong>{cases[d.id]}</strong> ราย
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div>
+  <p className="font-medium text-gray-700 mb-2">
+    🏥 โรงพยาบาล: {hospitals.find(h => h.id === hospitalId)?.name}
+  </p>
+  <ul className="space-y-1 text-sm text-gray-700">
+  {diseases.map((d, index) => {
+    const displayIndex = index + 1;
+    const value = cases[d.id]?.trim(); // ตัดช่องว่างซ้ายขวาเผื่อผู้ใช้กรอก "   "
+
+    return (
+      <li key={d.id}>
+        {displayIndex}. {d.name}: <strong>{value === "" ? 0 : value}</strong> ราย
+      </li>
+    );
+  })}
+</ul>
+
+</div>
 
               <div className="flex justify-end space-x-3 pt-2">
                 <button

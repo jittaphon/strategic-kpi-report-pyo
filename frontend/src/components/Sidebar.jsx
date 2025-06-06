@@ -29,7 +29,7 @@ const menuItems = [
 export default function Sidebar() {
   const [collapsed] = useState(true);
   const [hovered, setHovered] = useState(false);
-  const [reportExpanded, setReportExpanded] = useState(false);
+  const [reportExpanded, setReportExpanded] = useState(true);
   const navigate = useNavigate();
 
   const expanded = hovered || !collapsed;
@@ -39,7 +39,7 @@ export default function Sidebar() {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => {
       setHovered(false);
-      setReportExpanded(false); // ปิด sub-menu ทันทีเมื่อ mouse ออก
+      setReportExpanded(true); // ปิด sub-menu ทันทีเมื่อ mouse ออก
   }}
       
       className={`min-h-screen border-r bg-white shadow-md flex flex-col transition-all duration-300 ${
@@ -82,20 +82,21 @@ export default function Sidebar() {
               </div>
             </div>
 
-            {/* Sub-menu items */}
-            {item.children && reportExpanded && expanded && (
-              <div className="ml-10 mt-1 space-y-1">
-                {item.children.map((child, childIndex) => (
-                  <Link
-                    key={childIndex}
-                    to={child.path}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded transition"
-                  >
-                    {child.label}
-                  </Link>
-                ))}
-              </div>
-            )}
+           <div
+  className={`ml-10 mt-1 space-y-1 transition-all ease-in-out duration-300 overflow-hidden ${
+    item.children && expanded && reportExpanded ? "max-h-screen opacity-100 visible" : "max-h-0 opacity-0 invisible"
+  }`}
+>
+  {item.children?.map((child, childIndex) => (
+    <Link
+      key={childIndex}
+      to={child.path}
+      className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded"
+    >
+      {child.label}
+    </Link>
+  ))}
+</div>
           </div>
         ))}
       </nav>
