@@ -5,9 +5,9 @@ import { dirname, resolve } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-
 export default defineConfig({
-  base: './',
+  // ✅ ใช้ base แทน basename และต้องตรงกับ Router basename
+  base: '/strategic-kpi-report-pyo/public',
   build: {
     outDir: resolve(__dirname, '../public'),
     emptyOutDir: true,
@@ -20,5 +20,4 @@ export default defineConfig({
       }
     }
   },
-  
 })
