@@ -1,8 +1,9 @@
 import axiosClient from './axiosClient';
 
 const telemedApi = {
+
   getAppointments() {  // get นั้นเเหละ
-    return axiosClient.get('/tele_med');
+    return axiosClient.get('/api/tele_med');
   },
  
 };

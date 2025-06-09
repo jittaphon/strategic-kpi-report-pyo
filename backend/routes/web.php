@@ -14,8 +14,9 @@ $router->options('/{any:.*}', function () {
 });
 
 
-$router->get('/tele_med', 'TeleMedController@getTeleMedData');
-
-$router->get('/ncd_registry', 'NCDRegistryController@getNCDRegistry');
-
-$router->post('/post_data_ncd_registry', 'NCDRegistryController@postDataNCDRegistry');
+// routes/web.php หรือ routes/api.php ใน Lumen
+$router->group(['prefix' => 'api'], function () use ($router) {
+    $router->get('/tele_med', 'TeleMedController@getTeleMedData');
+    $router->get('/ncd_registry', 'NCDRegistryController@getNCDRegistry');
+    $router->post('/post_data_ncd_registry', 'NCDRegistryController@postDataNCDRegistry');
+});
