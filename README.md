@@ -51,8 +51,8 @@ This dashboard is actively used by **public health officers and planners** in pr
 
 Developer: [Jittaphon](https://github.com/jittaphon)  
 ---
+© 2025 Provincial Public Health Office, Phayao  
+Developed by the Digital Health Unit  
+All rights reserved. For internal use only.
 
-## 📝 License
 
-© 2025 Jittaphon  
-Released under the MIT License — see [LICENSE](LICENSE) for details.
