@@ -1,0 +1,23 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # <--- เปลี่ยนจาก "3000:80" เป็น "8080:80"
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80" # ยังคงเป็น Port 80 สำหรับ Backend ตาม Nginx config ใน backend Dockerfile
+    networks:
+      - app-network
+    # ... (ส่วนอื่น ๆ ของ backend service) ...
+
+networks:
+  app-network:
+    driver: bridge
