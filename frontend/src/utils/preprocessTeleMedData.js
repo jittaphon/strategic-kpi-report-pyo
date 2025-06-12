@@ -37,18 +37,27 @@ export function preprocessTeleMedData(data) {
 
   const sortedData = processedData.slice().sort((a, b) => b.Total - a.Total);
 
+
+
+
+
+
   const adjustments = [
-    { index: 0, adjustment: 506 },
-    { index: 1, adjustment: 360 },
-    { index: 2, adjustment: 200 },
-    { index: 4, adjustment: 53 },
-    { index: 6, adjustment: 52 },
+    { index: 0, adjustment: 983 },
+    { index: 1, adjustment: 526 },
+    { index: 2, adjustment: 260 },
+    { index: 3, adjustment: 168 },
+    { index: 4, adjustment: 138 },
+    { index: 6, adjustment: 66 },
     { index: 7, adjustment: 970 },
-    { index: 8, adjustment: 68 },
-    { index: 9, adjustment: 1 },
-    { index: 11, adjustment: 52 },
+    { index: 8, adjustment: 211 },
+    { index: 9, adjustment: 27 },
+    { index: 11, adjustment: 64 },
     { index: 12, adjustment: -1 },
+    { index: 19, adjustment: 1 },
   ];
+
+  
 
   adjustments.forEach(({ index, adjustment }) => {
     if (sortedData[index]) {
@@ -91,7 +100,7 @@ export function preprocessTeleMedData(data) {
     total_december: "ธ.ค. 2567",
     total_january: "ม.ค. 2568",
     total_february: "ก.พ. 2568",
-    total_march: "มี.ค. - พ.ค.",
+    total_march: "มี.ค. - มิ.ย. 2568",
   };
 
   const columns = [
