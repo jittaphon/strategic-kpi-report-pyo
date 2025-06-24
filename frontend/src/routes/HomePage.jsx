@@ -51,7 +51,7 @@ export default function HomePage() {
 
       {/* Animated Icon */}
       <img
-  src="https://pyo.moph.go.th/strategic-kpi-report-pyo/public/images/icon.png"
+  src="https://pyo.moph.go.th/datahub/strategic-kpi-report-pyo/public/images/icon.png"
   alt="Health Icon"
   className="icon w-64 h-64 my-[100px] drop-shadow-lg z-10 hover:scale-105 transition-transform duration-300"
 />

@@ -34,7 +34,7 @@ useEffect(() => {
    <div
   className="p-6 rounded-2xl border border-green-400 text-xl text-gray-800 bg-cover bg-center rounded-2xl"
   style={{
-    backgroundImage: `url('https://pyo.moph.go.th/strategic-kpi-report-pyo/public/images/periods.png')`,
+    backgroundImage: `url('https://pyo.moph.go.th/datahub/strategic-kpi-report-pyo/public/images/periods.png')`,
   }}
 >
   <div className=" rounded-xl p-4">

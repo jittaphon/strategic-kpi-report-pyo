@@ -7,7 +7,7 @@ export default function NavBar() {
       <div className="w-full px-4">
         <div className="flex items-center h-16 space-x-4">
           <img
-            src="https://pyo.moph.go.th/strategic-kpi-report-pyo/public/images/icon.png"
+            src="https://pyo.moph.go.th/datahub/strategic-kpi-report-pyo/public/images/icon.png"
             alt="Health Icon"
             className="w-10 h-10"
           />
