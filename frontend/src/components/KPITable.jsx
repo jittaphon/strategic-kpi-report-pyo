@@ -9,6 +9,8 @@ import { motion } from "framer-motion";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
 export default function KPITable({ data, columns, renderHeader , extraContent }) {
+
+
   const [sorting, setSorting] = React.useState([]);
 
   const table = useReactTable({
