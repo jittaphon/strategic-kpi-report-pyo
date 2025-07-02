@@ -3,113 +3,166 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API } from '../api'; // สมมติว่านี่คือ API ที่ใช้ดึงข้อมูลจาก Base ของคุณ
-// import axios from 'axios'; // ถ้าคุณใช้ axios ในการ fetch API กระทรวง
 import KPITable from '../components/KPITable';
 import KPIChart from '../components/KPIChart';
 import { getTableConfig } from '../utils/getTableConfig'; // Import getTableConfig ตัวกลางของเรา
+
+// --- Mock API สำหรับการบันทึกข้อมูล (จำลอง) ---
+// ในความเป็นจริง ส่วนนี้จะเป็นการเรียก API จริงๆ ของคุณ
+const mockSaveTeleMedData = (dataToSave) => {
+  
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // จำลองการบันทึกข้อมูล
+      console.log("Mock API: กำลังบันทึกข้อมูล...", dataToSave);
+      // ในสถานการณ์จริง คุณอาจจะส่งข้อมูล array ทั้งหมดไป หรือกรองเฉพาะส่วนที่ต้องการบันทึก
+      if (dataToSave && Array.isArray(dataToSave) && dataToSave.length > 0) {
+        resolve({
+          status: 'success',
+          message: `ข้อมูล ${dataToSave.length} รายการถูกบันทึก (Mock) เรียบร้อยแล้ว`,
+          savedData: dataToSave,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        reject({
+          status: 'error',
+          message: 'Mock API: บันทึกข้อมูลล้มเหลว - ข้อมูลไม่ถูกต้องหรือไม่ครบถ้วน',
+          details: dataToSave
+        });
+      }
+    }, 1500); // จำลองเวลาหน่วง 1.5 วินาที
+  });
+};
+
 
 export default function KPITeleMed() {
   const [baseData, setBaseData] = useState([]); // ข้อมูลรายเดือนจาก Base ของคุณ (total_october, ..., total_march เดิม)
   const [apiTotalsData, setApiTotalsData] = useState([]); // ข้อมูล Total จาก API กระทรวง
   const [loading, setLoading] = useState(true); // สถานะการโหลด
-  const [date,setDate] = useState('');
+  const [date, setDate] = useState(''); // เก็บวันที่ประมวลผลจาก API กระทรวง
   const [error, setError] = useState(null); // สถานะข้อผิดพลาด
+  const [saveStatus, setSaveStatus] = useState(''); // สถานะการบันทึกข้อมูลอัตโนมัติ
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // --- 1. ดึงข้อมูลรายเดือนจาก Base ของคุณ ---
-        const baseRes = await API.tele_med.getAppointments();
-        if (baseRes.data && baseRes.data.data) {
-          setBaseData(baseRes.data.data);
-        } else {
-          throw new Error("รูปแบบข้อมูลจาก Base API ไม่ถูกต้อง");
-        }
-
-        // --- 2. ดึงข้อมูล Total จาก API กระทรวงสาธารณสุข ---
-            const apiUrl = "https://api-hdc.moph.go.th/v1/reports/province/data/2d85d6ec39840f8051854b028fa13073?table_display=provider&year=2568&month=ALL&zone=01&province_code=56&district_code=ALL&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL";
-            const apiResponse = await axios.get(apiUrl, {
-              headers: {
-                'Content-Type': 'application/json', // อาจจะจำเป็นหรือไม่ก็ได้
-                'domain': 'pyo', // <-- นี่คือ Header ที่คุณต้องเพิ่ม (สมมติว่าเป็นชื่อนี้)
-                // หรืออาจจะเป็น 'Referer': 'https://pyo.moph.go.th'
-              }
-            });
-            const apiRawData = apiResponse.data;
-  
-        // --- 3. แปลง (Map) ข้อมูล Total จาก API กระทรวง ให้มีรูปแบบ HOSPCODE_HOSNAME เหมือน Base ของคุณ ---
-        const mappedApiTotals = apiRawData.rows[0].data
-          .filter(item => item.result !== null) // กรองเฉพาะรายการที่มีค่า Total
-          .map(item => {
-            // item.a_name มาในรูปแบบ "06554:โรงพยาบาลส่งเสริมสุขภาพตำบลดงเจน"
-            const [a_code, a_name_only] = item.a_name.split(':'); // แยก code กับชื่อ
-            return {
-              HOSPCODE_HOSNAME: `${a_code.trim()} ${a_name_only.trim()}`, // สร้างรูปแบบ "รหัส ชื่อโรงพยาบาล"
-              Total: parseInt(item.result) || 0, // แปลง result เป็นตัวเลข (ใช้ 0 ถ้าเป็น null/NaN)
-            };
-          });
-
-    
-        
-        setApiTotalsData(mappedApiTotals); // เก็บข้อมูล Total ที่แปลงแล้ว
-        setDate(apiRawData.rows[0].datecom)
-      } catch (err) {
-        console.error("เกิดข้อผิดพลาดในการดึงหรือประมวลผลข้อมูล:", err);
-        setError("ไม่สามารถโหลดหรือประมวลผลข้อมูลได้: " + err.message);
-      } finally {
-        setLoading(false); // ไม่ว่าจะสำเร็จหรือเกิดข้อผิดพลาด ให้หยุด Loading
+  // ฟังก์ชันสำหรับดึงข้อมูลทั้งหมด
+  const fetchAllData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // --- 1. ดึงข้อมูลรายเดือนจาก Base ของคุณ ---
+      const baseRes = await API.tele_med.getAppointments();
+      if (baseRes.data && baseRes.data.data) {
+        setBaseData(baseRes.data.data);
+      } else {
+        throw new Error("รูปแบบข้อมูลจาก Base API ไม่ถูกต้อง");
       }
-    };
 
-    fetchAllData(); // เรียกฟังก์ชันดึงข้อมูลเมื่อ Component โหลดครั้งแรก
+      // --- 2. ดึงข้อมูล Total จาก API กระทรวงสาธารณสุข ---
+      const apiUrl = "https://api-hdc.moph.go.th/v1/reports/province/data/2d85d6ec39840f8051854b028fa13073?table_display=provider&year=2568&month=ALL&zone=01&province_code=56&district_code=ALL&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL";
+      const apiResponse = await axios.get(apiUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+          'domain': 'pyo',
+        }
+      });
+      const apiRawData = apiResponse.data;
+
+      // --- 3. แปลง (Map) ข้อมูล Total จาก API กระทรวง ให้มีรูปแบบ HOSPCODE_HOSNAME เหมือน Base ของคุณ ---
+      const mappedApiTotals = apiRawData.rows[0].data
+        .filter(item => item.result !== null)
+        .map(item => {
+          const [a_code, a_name_only] = item.a_name.split(':');
+          return {
+            HOSPCODE_HOSNAME: `${a_code.trim()} ${a_name_only.trim()}`,
+            Total: parseInt(item.result) || 0,
+          };
+        });
+
+      setApiTotalsData(mappedApiTotals);
+      // *** สำคัญ: ตั้งค่า date ที่นี่ หลังจากดึงข้อมูลจาก API กระทรวงสำเร็จ
+      setDate(apiRawData.rows[0].datecom); 
+
+    } catch (err) {
+      console.error("เกิดข้อผิดพลาดในการดึงหรือประมวลผลข้อมูล:", err);
+      setError("ไม่สามารถโหลดหรือประมวลผลข้อมูลได้: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // useEffect สำหรับดึงข้อมูลทั้งหมดเมื่อ Component โหลดครั้งแรก
+  useEffect(() => {
+    fetchAllData();
   }, []); // Dependency array ว่างเปล่า = รันครั้งเดียวตอน Component โหลด
+
+  // --- useEffect สำหรับบันทึกข้อมูลอัตโนมัติเมื่อ 'date' ถูกกำหนดค่า ---
+  useEffect(() => {
+    // ตรวจสอบว่ามีข้อมูลจาก API กระทรวงและ date ถูกกำหนดแล้ว
+    // และข้อมูลที่ได้จากการรวม baseData และ apiTotalsData ก็มีอยู่
+    if (baseData.length > 0 && apiTotalsData.length > 0 && date) {
+      setSaveStatus('กำลังบันทึกข้อมูลล่าสุดไปยังฐานข้อมูล...');
+      const combinedDataForSave = getTableConfig('tele_med', baseData, apiTotalsData, date).data;
+
+      mockSaveTeleMedData(combinedDataForSave) // ส่งข้อมูลที่ประมวลผลแล้วไปบันทึก
+        .then(response => {
+          console.log("บันทึกข้อมูลอัตโนมัติสำเร็จ:", response);
+          setSaveStatus(`✅ ${response.message}`);
+        })
+        .catch(err => {
+          console.error("บันทึกข้อมูลอัตโนมัติล้มเหลว:", err);
+          setSaveStatus(`❌ บันทึกข้อมูลอัตโนมัติล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`);
+        });
+    }
+  }, [baseData, apiTotalsData, date]); // Dependency array: จะทำงานใหม่เมื่อ baseData, apiTotalsData หรือ date เปลี่ยน
 
   // --- ประมวลผลข้อมูลโดยเรียก getTableConfig ---
   // จะเรียก getTableConfig ก็ต่อเมื่อข้อมูลทั้ง baseData และ apiTotalsData ถูกโหลดมาแล้ว
   const { data, columns } = (baseData.length > 0 && apiTotalsData.length > 0)
-    ? getTableConfig('tele_med', baseData, apiTotalsData) // ส่งทั้ง baseData และ apiTotalsData เข้าไป
+    ? getTableConfig('tele_med', baseData, apiTotalsData, date) // ส่งทั้ง baseData และ apiTotalsData เข้าไป
     : { data: [], columns: [] }; // ถ้ายังโหลดไม่เสร็จ ก็ให้เป็น Array ว่างไปก่อน
 
   // --- ส่วนแสดงผลตามสถานะ Loading/Error/Data ---
   if (loading) return <div>🔄 กำลังโหลดข้อมูล...</div>;
   if (error) return <div style={{ color: 'red', padding: '20px' }}>⚠️ เกิดข้อผิดพลาด: {error}</div>;
-  if (data.length === 0) return <div>ไม่พบข้อมูลที่ตรงกัน หรือยังไม่มีข้อมูล</div>; // กรณีไม่มีข้อมูลที่ตรงกันเลย
+  if (data.length === 0) return <div>ไม่พบข้อมูลที่ตรงกัน หรือยังไม่มีข้อมูล</div>;
 
   return (
     <>
+      {/* สถานะการบันทึกอัตโนมัติ */}
+      {saveStatus && (
+        <div className={`p-3 mb-4 rounded-md ${saveStatus.startsWith('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          {saveStatus}
+        </div>
+      )}
+
       {/* KPITable Component ของคุณ */}
       <KPITable
         data={data}
         columns={columns}
-         renderHeader={() => (
-        <div
-          className="p-6 rounded-2xl border border-green-400 text-xl text-gray-800 bg-cover bg-center rounded-2xl"
-          style={{
-            backgroundImage: `url('https://pyo.moph.go.th/datahub/strategic-kpi-report-pyo/public/images/periods.png')`,
-          }}
-        >
-          <div className="rounded-xl p-4">
-            <span className="block text-sm text-green-600 font-semibold uppercase tracking-wide mb-1">
-              หน่วยบริการที่มีบริการการแพทย์ทางไกล
-            </span>
-            <span className="block text-lg font-bold">
-              จังหวัดพะเยา ปีงบประมาณ 2568
-            </span>
-            {/* หมายเหตุเดิมที่ระบุว่าไม่สามารถแสดงผลแยกรายเดือนได้ */}
-            <span className="block text-sm text-red-600 font-semibold uppercase tracking-wide mt-1">
-              หมายเหตุ : ผลงานตั้งแต่เดือนมีนาคมเป็นต้นไป ไม่สามารถแสดงผลแยกรายเดือน เนื่องจากไม่สามารถเชื่อมต่อฐานข้อมูล HDC ได้
-            </span>
-            {/* แสดงวันที่ประมวลผลจาก API หากมี */}
-            {date && ( // <-- เช็คว่ามีค่า date ก่อนแสดง
-              <span className="block text-sm text-red-600 font-semibold uppercase tracking-wide mt-1">
-                ข้อมูลประมวลผลเมื่อวันที่ {date}
+        renderHeader={() => (
+          <div
+            className="p-6 rounded-2xl border border-green-400 text-xl text-gray-800 bg-cover bg-center rounded-2xl"
+            style={{
+              backgroundImage: `url('https://pyo.moph.go.th/datahub/strategic-kpi-report-pyo/public/images/periods.png')`,
+            }}
+          >
+            <div className="rounded-xl p-4">
+              <span className="block text-sm text-green-600 font-semibold uppercase tracking-wide mb-1">
+                หน่วยบริการที่มีบริการการแพทย์ทางไกล
               </span>
-            )}
+              <span className="block text-lg font-bold">
+                จังหวัดพะเยา ปีงบประมาณ 2568
+              </span>
+              <span className="block text-sm text-red-600 font-semibold uppercase tracking-wide mt-1">
+                หมายเหตุ : ผลงานตั้งแต่เดือนมีนาคมเป็นต้นไป ไม่สามารถแสดงผลแยกรายเดือน เนื่องจากไม่สามารถเชื่อมต่อฐานข้อมูล HDC ได้
+              </span>
+              {date && (
+                <span className="block text-sm text-red-600 font-semibold uppercase tracking-wide mt-1">
+                  ข้อมูลประมวลผลเมื่อวันที่ {date}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       />
 
       {/* KPIChart Component ของคุณ */}

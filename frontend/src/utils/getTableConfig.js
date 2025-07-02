@@ -1,11 +1,11 @@
 import { preprocessTeleMedData } from "./preprocessTeleMedData";
 import { buildColumnsWithFooter } from "./buildColumnsWithFooter";
 
-export function getTableConfig(type, data,apiTotals) {
+export function getTableConfig(type, data,apiTotals,date) {
 
 
   if (type === "tele_med") {
-    return preprocessTeleMedData(data,apiTotals); // คำนวณข้อมูล TeleMed เเละ สร้างคอลัมน์
+    return preprocessTeleMedData(data,apiTotals,date); // คำนวณข้อมูล TeleMed เเละ สร้างคอลัมน์
     
   }
 

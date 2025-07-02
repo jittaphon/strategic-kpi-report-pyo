@@ -1,6 +1,6 @@
 // utils/preprocessTeleMedData.js
 
-export function preprocessTeleMedData(baseData, apiTotals) {
+export function preprocessTeleMedData(baseData, apiTotals, date) {
     // สร้าง Map เพื่อให้เข้าถึงข้อมูล baseData ได้ง่ายและรวดเร็วด้วย HOSPCODE_HOSNAME
     const baseDataMap = new Map();
     baseData.forEach(item => {
@@ -8,26 +8,68 @@ export function preprocessTeleMedData(baseData, apiTotals) {
         baseDataMap.set(hospcodeHosname, item);
     });
 
-    const processedData = apiTotals.map((apiItem) => { // <-- เปลี่ยนมาวนลูปจาก apiTotals เป็นหลัก
+    let currentMonth = null;
+    let currentYear = null;
+    let currentDay = null; // เพิ่มตัวแปรสำหรับวัน
+
+    // --- Logic เพิ่มเติม: แปลง date จาก String ภาษาไทย เป็น Date Object ที่ถูกต้อง ---
+    if (date) {
+        // Map สำหรับแปลงชื่อเดือนไทยเป็นเลขเดือน (0-indexed)
+        const thaiMonthMap = {
+            'มกราคม': 0, 'กุมภาพันธ์': 1, 'มีนาคม': 2, 'เมษายน': 3, 'พฤษภาคม': 4, 'มิถุนายน': 5,
+            'กรกฎาคม': 6, 'สิงหาคม': 7, 'กันยายน': 8, 'ตุลาคม': 9, 'พฤศจิกายน': 10, 'ธันวาคม': 11
+        };
+
+        const parts = date.split(' '); // แยกสตริงด้วยช่องว่าง
+        if (parts.length === 3) {
+            const day = parseInt(parts[0]);
+            const monthName = parts[1];
+            // แปลงปี พ.ศ. เป็น ค.ศ.
+            const buddhistYear = parseInt(parts[2]);
+            const christianYear = buddhistYear - 543;
+
+            const monthIndex = thaiMonthMap[monthName];
+
+            if (!isNaN(day) && monthIndex !== undefined && !isNaN(christianYear)) {
+                const d = new Date(christianYear, monthIndex, day);
+                currentMonth = d.getMonth() + 1; // 1-indexed (1 for Jan, ..., 7 for Jul)
+                currentYear = d.getFullYear();
+                currentDay = d.getDate(); // ดึงวันออกมา
+            }
+        }
+    }
+
+    // Fallback หาก date ไม่ถูกต้องหรือไม่ถูกกำหนด
+    if (currentMonth === null || currentYear === null || currentDay === null) {
+        const today = new Date();
+        currentMonth = today.getMonth() + 1;
+        currentYear = today.getFullYear();
+        currentDay = today.getDate();
+    }
+    // -----------------------------------------------------------------------------
+
+    const processedData = apiTotals.map((apiItem) => {
         const hospcodeHosname = apiItem.HOSPCODE_HOSNAME;
         const correctTotalFromApi = parseInt(apiItem.Total) || 0; // Total นี้มาจาก API กระทรวง
 
         // ดึงข้อมูลที่ตรงกันจาก baseDataMap
         const baseItem = baseDataMap.get(hospcodeHosname);
 
-        // ดึงค่าบริการรายเดือนจาก baseData ถ้ามี ถ้าไม่มี ให้เป็น 0
+        // ดึงค่าบริการรายเดือนจาก baseData ถ้ามี ถ้าไม่มี ให้เป็น 0 (ใช้ _base เพื่อความชัดเจน)
         const total_october = baseItem ? (parseInt(baseItem.total_october) || 0) : 0;
         const total_november = baseItem ? (parseInt(baseItem.total_november) || 0) : 0;
         const total_december = baseItem ? (parseInt(baseItem.total_december) || 0) : 0;
         const total_january = baseItem ? (parseInt(baseItem.total_january) || 0) : 0;
         const total_february = baseItem ? (parseInt(baseItem.total_february) || 0) : 0;
-        const total_april = baseItem ? (parseInt(baseItem.total_april) || 0) : 0;
-        const total_may = baseItem ? (parseInt(baseItem.total_may) || 0) : 0;
-        const total_june = baseItem ? (parseInt(baseItem.total_june) || 0) : 0;
-        const total_july = baseItem ? (parseInt(baseItem.july) || 0) : 0; // ตรวจสอบว่าใน baseData ใช้ 'july' หรือ 'total_july'
-        const total_august = baseItem ? (parseInt(baseItem.total_august) || 0) : 0;
-        const total_september = baseItem ? (parseInt(baseItem.total_september) || 0) : 0;
 
+        // ดึงค่าเดือนมีนาคม - กันยายนจาก baseData (สำหรับใช้ในกรณีที่ไม่ใช่เดือนปัจจุบันที่ถูกอัปเดต)
+        let total_march_base = baseItem ? (parseInt(baseItem.total_march) || 0) : 0;
+        let total_april_base = baseItem ? (parseInt(baseItem.total_april) || 0) : 0;
+        let total_may_base = baseItem ? (parseInt(baseItem.total_may) || 0) : 0;
+        let total_june_base = baseItem ? (parseInt(baseItem.total_june) || 0) : 0;
+        let total_july_base = baseItem ? (parseInt(baseItem.july || baseItem.total_july) || 0) : 0;
+        let total_august_base = baseItem ? (parseInt(baseItem.total_august) || 0) : 0;
+        let total_september_base = baseItem ? (parseInt(baseItem.total_september) || 0) : 0;
 
         // คำนวณผลรวมของเดือนที่มีข้อมูลจริงจาก baseData (ต.ค. - ก.พ.)
         const sumOfKnownPreviousMonths =
@@ -37,12 +79,50 @@ export function preprocessTeleMedData(baseData, apiTotals) {
             total_january +
             total_february;
 
-        // คำนวณค่า total_march (ซึ่งหมายถึงช่วง มี.ค. - มิ.ย.) ที่ถูกต้อง
-        // โดยใช้ Total จาก API กระทรวง ลบด้วยผลรวมของเดือนก่อนหน้า
-        const calculated_total_march = correctTotalFromApi - sumOfKnownPreviousMonths;
+        // ยอดส่วนต่างที่ต้องนำไปปันส่วน
+        const remainingTotalToDistribute = Math.max(0, correctTotalFromApi - sumOfKnownPreviousMonths);
 
-        // ป้องกันไม่ให้ค่าติดลบ หากข้อมูลมีปัญหา
-        const final_total_march = Math.max(0, calculated_total_march);
+        // กำหนดค่าเริ่มต้นของเดือนทั้งหมดตาม baseData ก่อน (ถ้าไม่มีข้อมูลก็จะเริ่มจาก 0)
+        let final_total_march = total_march_base;
+        let final_total_april = total_april_base;
+        let final_total_may = total_may_base;
+        let final_total_june = total_june_base;
+        let final_total_july = total_july_base;
+        let final_total_august = total_august_base;
+        let final_total_september = total_september_base;
+
+        // Logic การปันส่วนยอดที่เพิ่มขึ้นตามเดือนปัจจุบัน (currentMonth) และวัน (currentDay)
+        if (currentMonth >= 3 && currentMonth <= 6) { // กรณีเป็นเดือน มี.ค.-มิ.ย.
+            final_total_march = remainingTotalToDistribute;
+            // เดือนอื่นๆ ใช้ค่าจาก baseData
+            final_total_july = total_july_base;
+            final_total_august = total_august_base;
+            final_total_september = total_september_base;
+        } else if (currentMonth === 7) { // กรณีเป็นเดือนกรกฎาคม
+            if (currentDay <= 2) { // 1-2 ก.ค. ยังคงไปลงมีนาคม
+                final_total_march = remainingTotalToDistribute;
+                final_total_july = total_july_base;
+                final_total_august = total_august_base;
+                final_total_september = total_september_base;
+            } else { // ตั้งแต่ 3 ก.ค. เป็นต้นไป ไปลงกรกฎาคม
+                final_total_march = total_march_base; // มี.ค. กลับไปใช้ base
+                final_total_july = remainingTotalToDistribute;
+                final_total_august = total_august_base;
+                final_total_september = total_september_base;
+            }
+        } else if (currentMonth === 8) { // กรณีเป็นเดือนสิงหาคม
+            final_total_march = total_march_base; // มี.ค. กลับไปใช้ base
+            final_total_july = total_july_base; // ก.ค. กลับไปใช้ base
+            final_total_august = remainingTotalToDistribute; // ยอดที่เพิ่มขึ้นไปลงสิงหาคม
+            final_total_september = total_september_base;
+        } else if (currentMonth === 9) { // กรณีเป็นเดือนกันยายน
+            final_total_march = total_march_base; // มี.ค. กลับไปใช้ base
+            final_total_july = total_july_base; // ก.ค. กลับไปใช้ base
+            final_total_august = total_august_base; // ส.ค. กลับไปใช้ base
+            final_total_september = remainingTotalToDistribute; // ยอดที่เพิ่มขึ้นไปลงกันยายน
+        }
+        // หาก currentMonth น้อยกว่า 3 (ก่อน มี.ค.) จะใช้ค่าจาก baseData ทั้งหมด
+        // และ remainingTotalToDistribute จะไม่ถูกนำไปใส่ในเดือนใดๆ ในช่วง มี.ค.-ก.ย. ในกรณีนี้
 
         return {
             HOSPCODE_HOSNAME: hospcodeHosname,
@@ -52,18 +132,23 @@ export function preprocessTeleMedData(baseData, apiTotals) {
             total_december: total_december,
             total_january: total_january,
             total_february: total_february,
-            total_march: final_total_march, // ยอดของ มี.ค. - มิ.ย. ที่คำนวณใหม่
-            total_april: total_april,
-            total_may: total_may,
-            total_june: total_june,
-            total_july: total_july,
-            total_august: total_august,
-            total_september: total_september,
+            total_march: final_total_march,
+            total_april: final_total_april,
+            total_may: final_total_may,
+            total_june: final_total_june,
+            total_july: final_total_july,
+            total_august: final_total_august,
+            total_september: final_total_september,
         };
     });
 
     // เรียงลำดับข้อมูลตาม Total ที่ถูกต้อง (จาก API กระทรวง)
     const sortedData = processedData.slice().sort((a, b) => b.Total - a.Total);
+
+    // Console logs สำหรับการดีบั๊ก (สามารถคอมเมนต์ออกได้เมื่อใช้งานจริง)
+    // console.log("Processed Data (first 5):", sortedData.slice(0, 5));
+    // console.log("Date Prop:", date, "Current Month:", currentMonth, "Current Year:", currentYear, "Current Day:", currentDay);
+    // console.log("apiTotals Data Map (sorted by Total, first 5):", apiTotals.slice().sort((a, b) => b.Total - a.Total).slice(0, 5));
 
     // ยังคง Filter รายการที่ไม่ต้องการออกไปตาม removeList เดิมของคุณ
     const removeList = [
@@ -83,7 +168,9 @@ export function preprocessTeleMedData(baseData, apiTotals) {
 
     const finalData = filteredData.sort((a, b) => b.Total - a.Total);
 
+
     // กำหนดคอลัมน์ที่จะแสดงในตาราง
+    // ลบ "total_april", "total_may", "total_june" ออกจากรายการคีย์ที่จะใช้สร้างคอลัมน์
     const numericKeys = [
         "Total",
         "total_october",
@@ -92,13 +179,9 @@ export function preprocessTeleMedData(baseData, apiTotals) {
         "total_january",
         "total_february",
         "total_march",
-        // ถ้าคุณต้องการแสดงเดือนอื่น ๆ ที่เป็น 0 ให้เพิ่มตรงนี้
-        // "total_april",
-        // "total_may",
-        // "total_june",
-        // "total_july",
-        // "total_august",
-        // "total_september",
+        "total_july",
+        "total_august",
+        "total_september",
     ];
 
     const columnHeaderMap = {
@@ -108,10 +191,7 @@ export function preprocessTeleMedData(baseData, apiTotals) {
         total_december: "ธ.ค. 2567",
         total_january: "ม.ค. 2568",
         total_february: "ก.พ. 2568",
-        total_march: "มี.ค. - มิ.ย. 2568",
-        total_april: "เม.ย. 2568", // เพิ่ม header ถ้าต้องการแสดง
-        total_may: "พ.ค. 2568",
-        total_june: "มิ.ย. 2568",
+        total_march: "มี.ค. - มิ.ย. 2568", // Header ยังคงเป็น "มี.ค. - มิ.ย. 2568"
         total_july: "ก.ค. 2568",
         total_august: "ส.ค. 2568",
         total_september: "ก.ย. 2568",
