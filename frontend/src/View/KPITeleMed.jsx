@@ -7,33 +7,6 @@ import KPITable from '../components/KPITable';
 import KPIChart from '../components/KPIChart';
 import { getTableConfig } from '../utils/getTableConfig'; // Import getTableConfig ตัวกลางของเรา
 
-// --- Mock API สำหรับการบันทึกข้อมูล (จำลอง) ---
-// ในความเป็นจริง ส่วนนี้จะเป็นการเรียก API จริงๆ ของคุณ
-const mockSaveTeleMedData = (dataToSave) => {
-  
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // จำลองการบันทึกข้อมูล
-      console.log("Mock API: กำลังบันทึกข้อมูล...", dataToSave);
-      // ในสถานการณ์จริง คุณอาจจะส่งข้อมูล array ทั้งหมดไป หรือกรองเฉพาะส่วนที่ต้องการบันทึก
-      if (dataToSave && Array.isArray(dataToSave) && dataToSave.length > 0) {
-        resolve({
-          status: 'success',
-          message: `ข้อมูล ${dataToSave.length} รายการถูกบันทึก (Mock) เรียบร้อยแล้ว`,
-          savedData: dataToSave,
-          timestamp: new Date().toISOString()
-        });
-      } else {
-        reject({
-          status: 'error',
-          message: 'Mock API: บันทึกข้อมูลล้มเหลว - ข้อมูลไม่ถูกต้องหรือไม่ครบถ้วน',
-          details: dataToSave
-        });
-      }
-    }, 1500); // จำลองเวลาหน่วง 1.5 วินาที
-  });
-};
-
 
 export default function KPITeleMed() {
   const [baseData, setBaseData] = useState([]); // ข้อมูลรายเดือนจาก Base ของคุณ (total_october, ..., total_march เดิม)
@@ -95,21 +68,19 @@ export default function KPITeleMed() {
   }, []); // Dependency array ว่างเปล่า = รันครั้งเดียวตอน Component โหลด
 
   // --- useEffect สำหรับบันทึกข้อมูลอัตโนมัติเมื่อ 'date' ถูกกำหนดค่า ---
-  useEffect(() => {
-    // ตรวจสอบว่ามีข้อมูลจาก API กระทรวงและ date ถูกกำหนดแล้ว
-    // และข้อมูลที่ได้จากการรวม baseData และ apiTotalsData ก็มีอยู่
+ useEffect(() => {
     if (baseData.length > 0 && apiTotalsData.length > 0 && date) {
-      setSaveStatus('กำลังบันทึกข้อมูลล่าสุดไปยังฐานข้อมูล...');
+      //setSaveStatus('กำลังบันทึกข้อมูลล่าสุดไปยังฐานข้อมูล...');
       const combinedDataForSave = getTableConfig('tele_med', baseData, apiTotalsData, date).data;
 
-      mockSaveTeleMedData(combinedDataForSave) // ส่งข้อมูลที่ประมวลผลแล้วไปบันทึก
-        .then(response => {
-          console.log("บันทึกข้อมูลอัตโนมัติสำเร็จ:", response);
-          setSaveStatus(`✅ ${response.message}`);
+      // *** เปลี่ยนเป็นเรียก API.tele_med.postAppointments ตรงนี้ ***
+      API.tele_med.postAppointments(combinedDataForSave) // <<< แก้ไขตรงนี้
+        .then(res => {
+           return res
         })
         .catch(err => {
-          console.error("บันทึกข้อมูลอัตโนมัติล้มเหลว:", err);
-          setSaveStatus(`❌ บันทึกข้อมูลอัตโนมัติล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`);
+          console.error("บันทึกข้อมูลอัตโนมัติล้มเหลว:", err.response ? err.response.data : err.message);
+          setSaveStatus(`❌ บันทึกข้อมูลอัตโนมัติล้มเหลว: ${err.response && err.response.data ? (err.response.data.error || 'เกิดข้อผิดพลาด') : err.message}`);
         });
     }
   }, [baseData, apiTotalsData, date]); // Dependency array: จะทำงานใหม่เมื่อ baseData, apiTotalsData หรือ date เปลี่ยน

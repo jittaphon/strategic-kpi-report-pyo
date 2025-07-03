@@ -19,5 +19,5 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('/tele_med', 'TeleMedController@getTeleMedData');
     $router->get('/ncd_registry', 'NCDRegistryController@getNCDRegistry');
     $router->post('/post_data_ncd_registry', 'NCDRegistryController@postDataNCDRegistry');
-    $router->post('/post_data_tele_med', 'TeleMedController@postDataNCDRegistry');
+    $router->post('/post_data_tele_med', 'TeleMedController@storeTeleMedData');
 });
