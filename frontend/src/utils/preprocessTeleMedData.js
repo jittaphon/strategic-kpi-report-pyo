@@ -92,34 +92,16 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
         let final_total_september = total_september_base;
 
         // Logic การปันส่วนยอดที่เพิ่มขึ้นตามเดือนปัจจุบัน (currentMonth) และวัน (currentDay)
-        if (currentMonth >= 3 && currentMonth <= 6) { // กรณีเป็นเดือน มี.ค.-มิ.ย.
-            final_total_march = remainingTotalToDistribute;
-            // เดือนอื่นๆ ใช้ค่าจาก baseData
+        // **ปรับแก้ให้ยอดส่วนต่างไปลงที่ final_total_march เสมอ หากเป็นเดือน มี.ค. - ก.ย.**
+        if (currentMonth >= 3 && currentMonth <= 9) { // ครอบคลุม มี.ค. ถึง ก.ย.
+            final_total_march = remainingTotalToDistribute; // ให้ยอดทั้งหมดไปลงที่ มี.ค.
+            // เดือนอื่นๆ กลับไปใช้ค่า baseData เดิมทั้งหมด
+            final_total_april = total_april_base;
+            final_total_may = total_may_base;
+            final_total_june = total_june_base;
             final_total_july = total_july_base;
             final_total_august = total_august_base;
             final_total_september = total_september_base;
-        } else if (currentMonth === 7) { // กรณีเป็นเดือนกรกฎาคม
-            if (currentDay <= 2) { // 1-2 ก.ค. ยังคงไปลงมีนาคม
-                final_total_march = remainingTotalToDistribute;
-                final_total_july = total_july_base;
-                final_total_august = total_august_base;
-                final_total_september = total_september_base;
-            } else { // ตั้งแต่ 3 ก.ค. เป็นต้นไป ไปลงกรกฎาคม
-                final_total_march = total_march_base; // มี.ค. กลับไปใช้ base
-                final_total_july = remainingTotalToDistribute;
-                final_total_august = total_august_base;
-                final_total_september = total_september_base;
-            }
-        } else if (currentMonth === 8) { // กรณีเป็นเดือนสิงหาคม
-            final_total_march = total_march_base; // มี.ค. กลับไปใช้ base
-            final_total_july = total_july_base; // ก.ค. กลับไปใช้ base
-            final_total_august = remainingTotalToDistribute; // ยอดที่เพิ่มขึ้นไปลงสิงหาคม
-            final_total_september = total_september_base;
-        } else if (currentMonth === 9) { // กรณีเป็นเดือนกันยายน
-            final_total_march = total_march_base; // มี.ค. กลับไปใช้ base
-            final_total_july = total_july_base; // ก.ค. กลับไปใช้ base
-            final_total_august = total_august_base; // ส.ค. กลับไปใช้ base
-            final_total_september = remainingTotalToDistribute; // ยอดที่เพิ่มขึ้นไปลงกันยายน
         }
         // หาก currentMonth น้อยกว่า 3 (ก่อน มี.ค.) จะใช้ค่าจาก baseData ทั้งหมด
         // และ remainingTotalToDistribute จะไม่ถูกนำไปใส่ในเดือนใดๆ ในช่วง มี.ค.-ก.ย. ในกรณีนี้
@@ -179,9 +161,6 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
         "total_january",
         "total_february",
         "total_march",
-        "total_july",
-        "total_august",
-        "total_september",
     ];
 
     const columnHeaderMap = {
@@ -192,9 +171,7 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
         total_january: "ม.ค. 2568",
         total_february: "ก.พ. 2568",
         total_march: "มี.ค. - มิ.ย. 2568", // Header ยังคงเป็น "มี.ค. - มิ.ย. 2568"
-        total_july: "ก.ค. 2568",
-        total_august: "ส.ค. 2568",
-        total_september: "ก.ย. 2568",
+   
     };
 
     const columns = [
