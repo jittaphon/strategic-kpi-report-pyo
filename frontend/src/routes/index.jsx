@@ -5,7 +5,7 @@ import MainLayout from '../layouts/MainLayout'
 import HomePage from './HomePage'
 import FilePage from './43filePage'
 import KPIOverview from './KPIOverview' // ← เพิ่ม import
-import Other from '../View/Other';
+import Other from './Other';
 
 const rootRoute = createRootRoute({
   component: () => (

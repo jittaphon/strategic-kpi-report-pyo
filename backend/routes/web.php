@@ -20,4 +20,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('/ncd_registry', 'NCDRegistryController@getNCDRegistry');
     $router->post('/post_data_ncd_registry', 'NCDRegistryController@postDataNCDRegistry');
     $router->post('/post_data_tele_med', 'TeleMedController@storeTeleMedData');
+    $router->post('/hdc_check/insert_data', 'HDCCheckController@InsertData');
+    $router->get('/hdc_check/get_data', 'HDCCheckController@GetData');
 });
