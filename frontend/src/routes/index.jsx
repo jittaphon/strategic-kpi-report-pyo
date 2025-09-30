@@ -1,23 +1,58 @@
-// routes.js
-import React from "react";
-import MainLayout from '../layouts/MainLayout';
-import { createHashRouter } from "react-router-dom"; // ✅ เปลี่ยนจาก createBrowserRouter
+// routes/index.tsx
+import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import React from 'react'
+import MainLayout from '../layouts/MainLayout'
+import HomePage from './HomePage'
+import FilePage from './43filePage'
+import KPIOverview from './KPIOverview' // ← เพิ่ม import
+import Other from '../View/Other';
 
-import KPIOverview from './KPIOverview';
-import HomePage from './HomePage';
+const rootRoute = createRootRoute({
+  component: () => (
+    <div>
+      <MainLayout />
+    </div>
+  ),
+})
 
-export const routes = createHashRouter([
-  {
-    path: '/',
-    element: <MainLayout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      {
-        path: 'report/:type',
-        element: <KPIOverview />,
-      },
-    ],
-  },
-]);
+// หน้า Home
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  component: () => <HomePage />,
+})
 
-// ❌ ไม่ต้องมี basename อีกแล้ว เพราะ HashRouter ไม่สน path จริงบน server
+// หน้า 43 Files
+const filesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/files-43',
+  component: () => <FilePage />,
+})
+
+// หน้า KPI แบบ Dynamic Route (รับ parameter :type)
+const kpiRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/kpi/$type', // ← ใช้ $type สำหรับ dynamic parameter
+  component: () => <KPIOverview />,
+})
+
+const Others = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/Other', // ← ใช้ $type สำหรับ dynamic parameter
+  component: () => <Other />,
+})
+
+
+// รวม routes ทั้งหมด
+const routeTree = rootRoute.addChildren([
+  indexRoute, 
+  filesRoute, 
+  kpiRoute, 
+  Others,   // ← เพิ่ม KPI dynamic route
+
+])
+
+export const router = createRouter({
+  routeTree,
+  basepath: '/datahub/strategic-kpi-report-pyo-ver2/public/',
+})

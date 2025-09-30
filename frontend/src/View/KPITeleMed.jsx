@@ -1,25 +1,26 @@
 // src/pages/KPITeleMed.jsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect,useRef, useState } from 'react';
 import axios from 'axios';
 import { API } from '../api'; // สมมติว่านี่คือ API ที่ใช้ดึงข้อมูลจาก Base ของคุณ
 import KPITable from '../components/KPITable';
 import KPIChart from '../components/KPIChart';
 import { getTableConfig } from '../utils/getTableConfig'; // Import getTableConfig ตัวกลางของเรา
-
+import { TrendingUp, Users, Activity, AlertCircle, FileText, CheckCircle2, Calendar, ArrowUp, ArrowDown, Zap } from 'lucide-react';
 
 export default function KPITeleMed() {
   const [baseData, setBaseData] = useState([]); // ข้อมูลรายเดือนจาก Base ของคุณ (total_october, ..., total_march เดิม)
   const [apiTotalsData, setApiTotalsData] = useState([]); // ข้อมูล Total จาก API กระทรวง
-  const [loading, setLoading] = useState(true); // สถานะการโหลด
-  const [date, setDate] = useState(''); // เก็บวันที่ประมวลผลจาก API กระทรวง
-  const [error, setError] = useState(null); // สถานะข้อผิดพลาด
-  const [saveStatus, setSaveStatus] = useState(''); // สถานะการบันทึกข้อมูลอัตโนมัติ
 
-  // ฟังก์ชันสำหรับดึงข้อมูลทั้งหมด
+  const [date, setDate] = useState(''); // เก็บวันที่ประมวลผลจาก API กระทรวง
+
+  const [saveStatus, setSaveStatus] = useState(''); // สถานะการบันทึกข้อมูลอัตโนมัติ
+  const containerRef = useRef();
+  const [mounted, setMounted] = useState(false);
+
+
   const fetchAllData = async () => {
-    setLoading(true);
-    setError(null);
+
     try {
       // --- 1. ดึงข้อมูลรายเดือนจาก Base ของคุณ ---
       const baseRes = await API.tele_med.getAppointments();
@@ -55,16 +56,16 @@ export default function KPITeleMed() {
       setDate(apiRawData.rows[0].datecom); 
 
     } catch (err) {
-      console.error("เกิดข้อผิดพลาดในการดึงหรือประมวลผลข้อมูล:", err);
-      setError("ไม่สามารถโหลดหรือประมวลผลข้อมูลได้: " + err.message);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching data:", err);
     }
+    
+   
   };
 
   // useEffect สำหรับดึงข้อมูลทั้งหมดเมื่อ Component โหลดครั้งแรก
   useEffect(() => {
     fetchAllData();
+     setMounted(true);
   }, []); // Dependency array ว่างเปล่า = รันครั้งเดียวตอน Component โหลด
 
   // --- useEffect สำหรับบันทึกข้อมูลอัตโนมัติเมื่อ 'date' ถูกกำหนดค่า ---
@@ -92,12 +93,29 @@ export default function KPITeleMed() {
     : { data: [], columns: [] }; // ถ้ายังโหลดไม่เสร็จ ก็ให้เป็น Array ว่างไปก่อน
 
   // --- ส่วนแสดงผลตามสถานะ Loading/Error/Data ---
-  if (loading) return <div>🔄 กำลังโหลดข้อมูล...</div>;
-  if (error) return <div style={{ color: 'red', padding: '20px' }}>⚠️ เกิดข้อผิดพลาด: {error}</div>;
-  if (data.length === 0) return <div>ไม่พบข้อมูลที่ตรงกัน หรือยังไม่มีข้อมูล</div>;
-
+  
   return (
-    <>
+      <div
+      ref={containerRef}
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 relative overflow-hidden"
+    >
+      {/* Animated Background Elements */}
+      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+      <div className="absolute top-[20%] right-[-5%] w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+      <div className="absolute bottom-[-10%] left-[30%] w-96 h-96 bg-gradient-to-br from-purple-400/30 to-pink-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
+
+      <div className="relative z-10 w-full px-6 py-8">
+        {/* Header Section */}
+        <div 
+          className={`mb-8 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`}
+          style={{ transitionDelay: '100ms' }}
+        >
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              
+            </div>
+          </div>
+
       {/* สถานะการบันทึกอัตโนมัติ */}
       {saveStatus && (
         <div className={`p-3 mb-4 rounded-md ${saveStatus.startsWith('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
@@ -154,6 +172,34 @@ export default function KPITeleMed() {
           },
         }}
       />
-    </>
+
+        </div>
+
+         
+  
+    
+
+      
+      </div>
+
+      <style jsx>{`
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
+    </div>
   );
-}
+};
+  
