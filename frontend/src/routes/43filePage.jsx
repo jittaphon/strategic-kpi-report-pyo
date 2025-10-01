@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { TrendingUp, Users, Activity, AlertCircle, FileText, CheckCircle2, Calendar, ArrowUp, ArrowDown, Zap, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 import { API } from '../api';
+import { FaTimesCircle, FaCheckCircle } from 'react-icons/fa';
 import {
   useReactTable,
   getCoreRowModel,
@@ -180,7 +181,7 @@ const FetchDataGet = async (year) => {
              bg-red-100/30 backdrop-blur-sm border border-red-300 rounded-md 
              px-3 py-1 inline-block"
 >
-  ℹ️ ข้อมูลจะถูกอัปเดตทุกวันที่ 15 และ 30 ของแต่ละเดือน
+  ℹ️ ข้อมูลจะประมวลผลทุกวันที่ 15 และ 30 ของแต่ละเดือน
 </p>
 
   </div>
@@ -280,19 +281,35 @@ const FetchDataGet = async (year) => {
                   ))}
                 </thead>
                 <tbody>
-                  {table.getRowModel().rows.map((row, idx) => (
+                 {table.getRowModel().rows.map((row) => (
                     <tr 
                       key={row.id}
                       className="border-b border-white/30 hover:bg-blue-100/70 transition-all duration-200 backdrop-blur-sm cursor-pointer"
                     >
-                      {row.getVisibleCells().map(cell => (
-                        <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </td>
-                      ))}
+                      {row.getVisibleCells().map(cell => {
+                        const value = cell.getValue();
+                        const isNumericColumn = cell.column.id !== 'hcode' && cell.column.id !== 'hname';
+                        
+                        return (
+                          <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
+                            {isNumericColumn && typeof value === 'number' ? (
+                              <div className="flex items-center justify-center">
+                                {value > 0 ? (
+                                   <FaCheckCircle size={24} color="green" /> 
+
+                                ) : (
+                                     <FaTimesCircle size={24} color="red" />
+                                )}
+                              </div>
+                            ) : (
+                              flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
@@ -301,18 +318,24 @@ const FetchDataGet = async (year) => {
 
             {/* Pagination */}
             <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-br from-blue-50/30 to-cyan-50/30 backdrop-blur-sm border-t border-white/50">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">
-                  แสดง {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} ถึง{' '}
-                  {Math.min(
-                    (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-                    table.getFilteredRowModel().rows.length
-                  )}{' '}
-                  จาก {table.getFilteredRowModel().rows.length} รายการ
-                </span>
-              </div>
+              <div className="flex flex-col gap-1">
+  <span className="text-sm text-gray-600">
+    แสดง {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} ถึง{' '}
+    {Math.min(
+      (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+      table.getFilteredRowModel().rows.length
+    )}{' '}
+    จาก {table.getFilteredRowModel().rows.length} รายการ
+  </span>
+  
+  <span className="text-sm text-gray-600 py-3">
+    วันที่ประมวลผล :: 30 กันยายน 2568
+  </span>
+</div>
+
               
               <div className="flex items-center gap-2">
+                
                 <button
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
@@ -335,7 +358,10 @@ const FetchDataGet = async (year) => {
                   <ChevronRight className="w-5 h-5 text-gray-700" />
                 </button>
               </div>
+
+              
             </div>
+            
           </div>
         </div>
       </div>

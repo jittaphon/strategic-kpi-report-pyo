@@ -54,5 +54,5 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
-  basepath: '/datahub/strategic-kpi-report-pyo-ver2/public/',
+  basepath: '/datahub/strategic-kpi-report-pyo/public/',
 })
