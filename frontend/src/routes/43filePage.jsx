@@ -101,37 +101,54 @@ const FetchDataGet = async (year) => {
 
   const columnHelper = createColumnHelper();
 
-  const monthColumns = [
-    { key: 'Oct_24', label: 'ต.ค.' },
-    { key: 'Nov_24', label: 'พ.ย.' },
-    { key: 'Dec_24', label: 'ธ.ค.' },
-    { key: 'Jan_25', label: 'ม.ค.' },
-    { key: 'Feb_25', label: 'ก.พ.' },
-    { key: 'Mar_25', label: 'มี.ค.' },
-    { key: 'Apr_25', label: 'เม.ย.' },
-    { key: 'May_25', label: 'พ.ค.' },
-    { key: 'Jun_25', label: 'มิ.ย.' },
-    { key: 'Jul_25', label: 'ก.ค.' },
-    { key: 'Aug_25', label: 'ส.ค.' },
-    { key: 'Sep_25', label: 'ก.ย.' },
-  ];
+// สร้าง function เพื่อ generate month columns จากข้อมูลจริง
+const generateMonthColumns = (data) => {
+  if (!data || data.length === 0) return [];
+  
+  // หา keys ทั้งหมดจาก object แรก ยกเว้น hosp_code และ hosp_name
+  const firstRow = data[0];
+  const monthKeys = Object.keys(firstRow).filter(
+    key => key !== 'hosp_code' && key !== 'hosp_name'
+  );
+  
+  // แปลง month key เป็น label ภาษาไทย
+  const monthLabels = {
+    'Jan': 'ม.ค.', 'Feb': 'ก.พ.', 'Mar': 'มี.ค.',
+    'Apr': 'เม.ย.', 'May': 'พ.ค.', 'Jun': 'มิ.ย.',
+    'Jul': 'ก.ค.', 'Aug': 'ส.ค.', 'Sep': 'ก.ย.',
+    'Oct': 'ต.ค.', 'Nov': 'พ.ย.', 'Dec': 'ธ.ค.'
+  };
+  
+  // สร้าง month columns
+  return monthKeys.map(key => {
+    const monthAbbr = key.split('_')[0]; // เอาแค่ Oct, Nov, Dec...
+    return {
+      key: key,
+      label: monthLabels[monthAbbr] || key
+    };
+  });
+};
 
-  const columns = [
-    columnHelper.accessor('hosp_code', {
-      header: 'รหัสหน่วยบริการ',
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('hosp_name', {
-      header: 'ชื่อหน่วยบริการ',
-      cell: info => info.getValue(),
-    }),
-    ...monthColumns.map(month =>
-      columnHelper.accessor(month.key, {
-        header: month.label,
-        cell: info => info.getValue()?.toLocaleString() || '0',
-      })
-    ),
-  ];
+// ใน component
+const monthColumns = generateMonthColumns(data); // data คือข้อมูลที่จะแสดงในตาราง
+
+const columns = [
+  columnHelper.accessor('hosp_code', {
+    header: 'รหัสหน่วยบริการ',
+    cell: info => info.getValue(),
+  }),
+  columnHelper.accessor('hosp_name', {
+    header: 'ชื่อหน่วยบริการ',
+    cell: info => info.getValue(),
+  }),
+  ...monthColumns.map(month =>
+    columnHelper.accessor(month.key, {
+      header: month.label,
+      cell: info => info.getValue()?.toLocaleString() || '0',
+    })
+  ),
+];
+
 
   const table = useReactTable({
     data,
@@ -196,30 +213,29 @@ const FetchDataGet = async (year) => {
         >
           <div className="flex items-center gap-4 rounded-2xl px-6 py-4">
             {/* Fiscal Year Select */}
-            <Select
-              value={fiscalYear}
-              onChange={(val) => setFiscalYear(val)}
-              size="large"
-              style={{
-                width: 160,
-                height: 56,
-                borderRadius: "14px",
-                background: "rgba(255, 255, 255, 0.5)",
-                backdropFilter: "blur(10px)",
-                boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-                fontSize: "18px",
-                fontWeight: 600,
-              }}
-              dropdownStyle={{
-                backdropFilter: "blur(12px)",
-                background: "rgba(255, 255, 255, 0.85)",
-                borderRadius: "12px",
-                fontSize: "18px",
-              }}
-            >
-              <Select.Option value="2025">ปีงบ 2568</Select.Option>
-              <Select.Option value="2026">ปีงบ 2569</Select.Option>
-            </Select>
+      <Select
+  value={fiscalYear}
+  onChange={setFiscalYear}
+  size="large"
+  style={{
+    width: 160,
+    height: 56,
+  }}
+  styles={{
+    popup: {
+      root: {
+        backdropFilter: "blur(12px)",
+        background: "rgba(255, 255, 255, 0.85)",
+        borderRadius: "12px",
+        fontSize: "18px",
+      },
+    },
+  }}
+>
+  <Select.Option value="2025">ปีงบ 2568</Select.Option>
+  <Select.Option value="2026">ปีงบ 2569</Select.Option>
+</Select>
+
 
             {/* Search Input */}
             <div className="relative flex-1">
@@ -289,16 +305,17 @@ const FetchDataGet = async (year) => {
                       {row.getVisibleCells().map(cell => {
                         const value = cell.getValue();
                         const isNumericColumn = cell.column.id !== 'hcode' && cell.column.id !== 'hname';
-                        
+          
                         return (
                           <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
                             {isNumericColumn && typeof value === 'number' ? (
+                        
                               <div className="flex items-center justify-center">
                                 {value > 0 ? (
                                    <FaCheckCircle size={24} color="green" /> 
 
                                 ) : (
-                                     <FaTimesCircle size={24} color="red" />
+                                   <FaTimesCircle size={24} color="red" />
                                 )}
                               </div>
                             ) : (
@@ -366,23 +383,7 @@ const FetchDataGet = async (year) => {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
+     
     </div>
   );
 };

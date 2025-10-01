@@ -211,32 +211,29 @@ const Fetch43FileData = async (year) => {
       <Zap className="w-6 h-6 text-yellow-500" />
       จำนวนข้อมูลการให้บริการ (อ้างอิงตามข้อมูลในแฟ้ม service)
     </h2>
-
-    <Select
-      value={fiscalYear}
-      onChange={(val) => setFiscalYear(val)}
-      size="large"
-      style={{
-        width: 160,
-        height: 56,
-        borderRadius: "14px",
-        background: "rgba(255, 255, 255, 0.5)",
-        backdropFilter: "blur(10px)",
-        boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-        fontSize: "18px",
-        fontWeight: 600,
-      }}
-      dropdownStyle={{
+<Select
+  value={fiscalYear}
+  onChange={setFiscalYear}
+  size="large"
+  style={{
+    width: 160,
+    height: 56,
+  }}
+  styles={{
+    popup: {
+      root: {
         backdropFilter: "blur(12px)",
         background: "rgba(255, 255, 255, 0.85)",
         borderRadius: "12px",
         fontSize: "18px",
-      }}
-    >
-      <Select.Option value="2026">ปีงบ 2569</Select.Option>
-      <Select.Option value="2025">ปีงบ 2568</Select.Option>
-      
-    </Select>
+      },
+    },
+  }}
+>
+  <Select.Option value="2025">ปีงบ 2568</Select.Option>
+  <Select.Option value="2026">ปีงบ 2569</Select.Option>
+</Select>
+
   </div>
 
   {/* Chart */}
@@ -277,25 +274,7 @@ const Fetch43FileData = async (year) => {
 
       </div>
 
-      <style jsx>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob { animation: blob 7s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
-
-        .glass-card {
-          backdrop-filter: blur(12px);
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 1rem;
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-      `}</style>
+   
     </div>
   );
 };
