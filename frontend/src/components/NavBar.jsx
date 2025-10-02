@@ -8,13 +8,13 @@ import {
   BookOpen,
   ChevronDown,
 } from "lucide-react";
-import { Link, useRouterState, useRouter } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isKpiDropdownOpen, setIsKpiDropdownOpen] = useState(false);
-  const router = useRouter();
-  const { location } = useRouterState();
+  const location = useLocation();
+  const navigate = useNavigate(); // ← เพิ่ม useNavigate hook
 
   const menuItems = [
     {
@@ -41,7 +41,7 @@ export default function NavBar() {
         {
           id: "telemedicine",
           label: "การให้บริการแพทย์ทางไกล (Telemedicine)",
-          path: "/kpi/tele_med", // ← full path
+          path: "/kpi/tele_med",
         },
       ],
     },
@@ -67,7 +67,7 @@ export default function NavBar() {
     setIsMobileMenuOpen(false);
     setIsKpiDropdownOpen(false);
     if (path) {
-      router.navigate({ to: path });
+      navigate(path); // ← เปลี่ยนจาก router.navigate เป็น navigate
     }
   };
 
@@ -297,8 +297,6 @@ export default function NavBar() {
           </div>
         )}
       </div>
-
-   
     </nav>
   );
 }

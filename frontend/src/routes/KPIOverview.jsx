@@ -1,11 +1,11 @@
 // KPIOverview.jsx
-import { useParams } from '@tanstack/react-router'; // เปลี่ยนจาก react-router-dom
+import { useParams } from 'react-router-dom'; // เปลี่ยนเป็น react-router-dom
 import KPITeleMed from '../View/KPITeleMed';
 import KPINcdRegistry from '../View/KPINcdRegistry';
 import React from 'react';
 
 export default function KPIOverview() {
-  const { type } = useParams({ from: '/kpi/$type' });
+  const { type } = useParams(); // ใช้แบบง่ายๆ ไม่ต้องส่ง config
   
   // ฟังก์ชันแยกเพื่อ render content
   const renderContent = () => {
@@ -26,7 +26,13 @@ export default function KPIOverview() {
       case 'ncd_registry': 
         return <KPINcdRegistry />;
       case 'emergency': 
-        return <div>🚑 Emergency Service (Coming Soon)</div>;
+        return (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center text-2xl">
+              🚑 Emergency Service (Coming Soon)
+            </div>
+          </div>
+        );
       default: 
         return (
           <div className="flex items-center justify-center h-64">
@@ -40,7 +46,7 @@ export default function KPIOverview() {
   };
 
   return (
-    <div className=" ">
+    <div className="">
       {renderContent()}
     </div>
   );

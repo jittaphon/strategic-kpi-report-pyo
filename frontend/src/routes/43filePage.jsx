@@ -8,7 +8,6 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   flexRender,
   createColumnHelper,
 } from '@tanstack/react-table';
@@ -83,7 +82,27 @@ const FetchDataGet = async (year) => {
   try {
     const res = await API.hdccheckAPI.getAppointments(year);
     if (res.data && res.data.data) {
-      setData(res.data.data);
+  const data = res.data.data; 
+   const codes = ['10717', '10718', '11184', '11185', '11186', '11187', '11188', '40744', '40745'];
+
+let sortedData = data.sort((a, b) => {
+  const aIn = codes.includes(a.hosp_code);
+  const bIn = codes.includes(b.hosp_code);
+
+  if (aIn && !bIn) return -1; // a อยู่ใน codes ขึ้นก่อน
+  if (!aIn && bIn) return 1;  // b อยู่ใน codes ขึ้นก่อน
+
+  // ทั้งคู่อยู่ใน codes หรือไม่อยู่ทั้งคู่ -> sort ตาม hosp_code เล็กไปใหญ่
+  return a.hosp_code.localeCompare(b.hosp_code, 'en', { numeric: true });
+});
+
+
+
+
+
+      setData(sortedData);
+
+
     } else {
       setData(res.data || []);
     }
@@ -138,35 +157,37 @@ const columns = [
     cell: info => info.getValue(),
   }),
   columnHelper.accessor('hosp_name', {
-    header: 'ชื่อหน่วยบริการ',
-    cell: info => info.getValue(),
+    header:  'ชื่อหน่วยบริการ',
+    cell: info => (
+      <span className="font-semibold text-gray-800 text-base">
+        {info.getValue()}
+      </span>
+    ),
   }),
   ...monthColumns.map(month =>
     columnHelper.accessor(month.key, {
-      header: month.label,
+      header: () =>(
+        <span className="text-base font-semibold">{month.label}</span>
+      ),
       cell: info => info.getValue()?.toLocaleString() || '0',
     })
   ),
 ];
 
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    state: {
-      globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
-  });
+ const table = useReactTable({
+  data,
+  columns,
+  getCoreRowModel: getCoreRowModel(),
+  getSortedRowModel: getSortedRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
+  // ❌ ลบ getPaginationRowModel() ออก เพราะไม่ใช้แล้ว
+  state: {
+    globalFilter,
+  },
+  onGlobalFilterChange: setGlobalFilter,
+  // ❌ ลบ initialState pagination ออก
+});
 
   return (
     <div
@@ -254,133 +275,99 @@ const columns = [
         </div>
 
         {/* Table Container */}
-        <div 
-          className={`relative transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-          style={{ transitionDelay: '300ms' }}
-        >
-          <div className="bg-white/40 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden">
-            {/* Loading Overlay */}
-            {isLoading && (
-              <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center rounded-3xl">
-                <div className="flex flex-col items-center gap-4">
-                  <HashLoader color="#3B82F6" size={30} />
-                  <p className="text-gray-600 font-medium">กำลังโหลดข้อมูล...</p>
-                </div>
-              </div>
-            )}
-            
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id} className="border-b border-white/50">
-                      {headerGroup.headers.map(header => (
-                        <th
-                          key={header.id}
-                          className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gradient-to-br from-blue-50/50 to-cyan-50/50 backdrop-blur-sm cursor-pointer hover:bg-blue-100/50 transition-colors"
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          <div className="flex items-center gap-2">
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                            {header.column.getIsSorted() && (
-                              <span className="text-blue-600">
-                                {header.column.getIsSorted() === 'asc' ? '↑' : '↓'}
-                              </span>
-                            )}
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                 {table.getRowModel().rows.map((row) => (
-                    <tr 
-                      key={row.id}
-                      className="border-b border-white/30 hover:bg-blue-100/70 transition-all duration-200 backdrop-blur-sm cursor-pointer"
-                    >
-                      {row.getVisibleCells().map(cell => {
-                        const value = cell.getValue();
-                        const isNumericColumn = cell.column.id !== 'hcode' && cell.column.id !== 'hname';
-          
-                        return (
-                          <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
-                            {isNumericColumn && typeof value === 'number' ? (
-                        
-                              <div className="flex items-center justify-center">
-                                {value > 0 ? (
-                                   <FaCheckCircle size={24} color="green" /> 
-
-                                ) : (
-                                   <FaTimesCircle size={24} color="red" />
-                                )}
-                              </div>
-                            ) : (
-                              flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-br from-blue-50/30 to-cyan-50/30 backdrop-blur-sm border-t border-white/50">
-              <div className="flex flex-col gap-1">
-  <span className="text-sm text-gray-600">
-    แสดง {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} ถึง{' '}
-    {Math.min(
-      (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-      table.getFilteredRowModel().rows.length
-    )}{' '}
-    จาก {table.getFilteredRowModel().rows.length} รายการ
-  </span>
-  
-  <span className="text-sm text-gray-600 py-3">
-    วันที่ประมวลผล :: 30 กันยายน 2568
-  </span>
-</div>
-
-              
-              <div className="flex items-center gap-2">
-                
-                <button
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  className="p-2 rounded-xl bg-white/70 backdrop-blur-sm border border-white/50 shadow-lg 
-                           disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50/50 transition-all"
-                >
-                  <ChevronLeft className="w-5 h-5 text-gray-700" />
-                </button>
-                
-                <span className="px-4 py-2 rounded-xl bg-white/70 backdrop-blur-sm border border-white/50 shadow-lg text-sm font-medium text-gray-700">
-                  หน้า {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
-                </span>
-                
-                <button
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  className="p-2 rounded-xl bg-white/70 backdrop-blur-sm border border-white/50 shadow-lg 
-                           disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50/50 transition-all"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-700" />
-                </button>
-              </div>
-
-              
-            </div>
-            
-          </div>
+     
+<div 
+  className={`relative transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+  style={{ transitionDelay: '300ms' }}
+>
+  <div className="bg-white/40 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden">
+    {/* Loading Overlay */}
+    {isLoading && (
+      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center rounded-3xl">
+        <div className="flex flex-col items-center gap-4">
+          <HashLoader color="#3B82F6" size={30} />
+          <p className="text-gray-600 font-medium">กำลังโหลดข้อมูล...</p>
         </div>
+      </div>
+    )}
+    
+    {/* ✅ เพิ่ม max-height และ overflow-y-auto ตรงนี้ */}
+    <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-300px)]">
+      <table className="w-full">
+        <thead className="sticky top-0 z-10">
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id} className="border-b border-white/50">
+              {headerGroup.headers.map(header => (
+                <th
+                  key={header.id}
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gradient-to-br from-blue-50/50 to-cyan-50/50 backdrop-blur-sm cursor-pointer hover:bg-blue-100/50 transition-colors"
+                  onClick={header.column.getToggleSortingHandler()}
+                >
+                  <div className="flex items-center gap-2">
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                    {header.column.getIsSorted() && (
+                      <span className="text-blue-600">
+                        {header.column.getIsSorted() === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map((row) => (
+            <tr 
+              key={row.id}
+              className="border-b border-white/30 hover:bg-blue-100/70 transition-all duration-200 backdrop-blur-sm cursor-pointer"
+            >
+              {row.getVisibleCells().map(cell => {
+                const value = cell.getValue();
+                const isNumericColumn = cell.column.id !== 'hosp_code' && cell.column.id !== 'hosp_name';
+
+                return (
+                  <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
+                    {isNumericColumn && typeof value === 'number' ? (
+                      <div className="flex items-center justify-center">
+                        {value > 0 ? (
+                          <FaCheckCircle size={24} color="green" /> 
+                        ) : (
+                          <FaTimesCircle size={24} color="red" />
+                        )}
+                      </div>
+                    ) : (
+                      flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Footer Info - ไม่ใช้ Pagination แล้ว */}
+    <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-br from-blue-50/30 to-cyan-50/30 backdrop-blur-sm border-t border-white/50">
+      <div className="flex flex-col gap-1">
+        <span className="text-sm text-gray-600">
+          แสดงทั้งหมด {table.getFilteredRowModel().rows.length} รายการ
+        </span>
+        
+        <span className="text-sm text-gray-600 py-3">
+          วันที่ประมวลผล :: 30 กันยายน 2568
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
       </div>
 
      

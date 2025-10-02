@@ -1,11 +1,10 @@
-import { Outlet, useRouterState } from "@tanstack/react-router";
+import { Outlet, useLocation } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import React from "react";
 
 export default function MainLayout() {
-  const router = useRouterState();
-  const location = router.location; // เทียบกับ react-router-dom's useLocation
+   const location = useLocation();
   const isHome = location.pathname === "/"; 
 
   return (

@@ -186,7 +186,7 @@ const Fetch43FileData = async (year) => {
       {/* Title */}
       <p className="text-gray-600 font-semibold mb-2 flex items-center gap-2">
         <Server className="w-5 h-5 text-pink-500" /> 
-        รพ.สต. ทั้งหมด
+        สถานบริการ ในจังหวัดทั้งหมด
       </p>
 
       {/* Number */}
