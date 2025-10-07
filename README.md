@@ -1,4 +1,4 @@
-# 📊 Strategic KPI Dashboard (PYO)
+<img width="1901" height="901" alt="image" src="https://github.com/user-attachments/assets/22716982-329a-4c0a-853b-dfa4b4d67b06" /><img width="1901" height="901" alt="image" src="https://github.com/user-attachments/assets/581710d6-2a67-43f9-9d5d-53bd7618d9ec" /><img width="1901" height="901" alt="image" src="https://github.com/user-attachments/assets/79661fe9-6430-4c22-a890-7144e6ea34c7" /># 📊 Strategic KPI Dashboard (PYO)
 
 > **Live demo**  
 [> https://pyo.moph.go.th/strategic-kpi-report-pyo/public/](https://pyo.moph.go.th/datahub/strategic-kpi-report-pyo/public/)
@@ -26,8 +26,8 @@ It consolidates health performance data from various reporting units and visuali
 
 ## 📸 Screenshots
 
-![image](https://github.com/user-attachments/assets/caabb9a0-fe0a-4eea-927b-98281ab2a635)
-![image](https://github.com/user-attachments/assets/ca9a1a0a-04a9-41d9-9039-6fa3c5545a3c)
+<img width="1901" height="901" alt="image" src="https://github.com/user-attachments/assets/4ca84548-79ed-44ef-b31c-0f56ffd0f681" />
+<img width="1857" height="894" alt="image" src="https://github.com/user-attachments/assets/f8a1de49-286e-46ed-b95c-141f21571479" />
 
 ---
 
