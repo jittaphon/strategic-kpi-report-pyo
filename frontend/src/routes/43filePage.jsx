@@ -212,7 +212,7 @@ const columns = [
       ภาพรวม 43 แฟ้มข้อมูลสุขภาพ
     </h1>
     <p className="text-gray-600 text-lg">
-      จำนวนข้อมูลการให้บริการ (อ้างอิงตามข้อมูลในแฟ้ม service)
+      จำนวนข้อมูลการนำเข้า (อ้างอิงตามข้อมูลในแฟ้ม service)
     </p>
     <p
   className="mt-3 text-md md:text-md font-semibold text-red-600 
@@ -291,10 +291,10 @@ const columns = [
       </div>
     )}
     
-    {/* ✅ เพิ่ม max-height และ overflow-y-auto ตรงนี้ */}
-    <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-300px)]">
+    {/* ✅ เอา max-height และ overflow-y-auto ออก */}
+    <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="sticky top-0 z-10">
+        <thead>
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id} className="border-b border-white/50">
               {headerGroup.headers.map(header => (
@@ -354,7 +354,7 @@ const columns = [
       </table>
     </div>
 
-    {/* Footer Info - ไม่ใช้ Pagination แล้ว */}
+    {/* Footer Info */}
     <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-br from-blue-50/30 to-cyan-50/30 backdrop-blur-sm border-t border-white/50">
       <div className="flex flex-col gap-1">
         <span className="text-sm text-gray-600">
@@ -368,6 +368,8 @@ const columns = [
     </div>
   </div>
 </div>
+
+
       </div>
 
      
