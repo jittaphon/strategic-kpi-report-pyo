@@ -1,4 +1,4 @@
-/># 📊 Strategic KPI Dashboard (PYO)
+# 📊 Strategic KPI Dashboard (PYO)
 
 > **Live demo**  
 [> https://pyo.moph.go.th/strategic-kpi-report-pyo/public/](https://pyo.moph.go.th/datahub/strategic-kpi-report-pyo/public/)
