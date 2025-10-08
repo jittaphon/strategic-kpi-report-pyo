@@ -167,7 +167,7 @@ const columns = [
   ...monthColumns.map(month =>
     columnHelper.accessor(month.key, {
       header: () =>(
-        <span className="text-base font-semibold">{month.label}</span>
+        <span className="text-lg font-semibold">{month.label}</span>
       ),
       cell: info => info.getValue()?.toLocaleString() || '0',
     })
@@ -329,24 +329,22 @@ const columns = [
                 const value = cell.getValue();
                 const isNumericColumn = cell.column.id !== 'hosp_code' && cell.column.id !== 'hosp_name';
 
-                return (
-                  <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
-                    {isNumericColumn && typeof value === 'number' ? (
-                      <div className="flex items-center justify-center">
-                        {value > 0 ? (
-                          <FaCheckCircle size={24} color="green" /> 
-                        ) : (
-                          <FaTimesCircle size={24} color="red" />
-                        )}
-                      </div>
-                    ) : (
-                      flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )
-                    )}
-                  </td>
-                );
+              return (
+  <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
+    {isNumericColumn && typeof value === 'number' ? (
+      <div className="flex items-center justify-center">
+        {value > 0 ? (
+          <FaCheckCircle size={24} color="green" />
+        ) : (
+          <span className="text-2xl">❌</span>
+        )}
+      </div>
+    ) : (
+      flexRender(cell.column.columnDef.cell, cell.getContext())
+    )}
+  </td>
+);
+
               })}
             </tr>
           ))}
