@@ -69,7 +69,7 @@ const Others = () => {
       title: 'คู่มือโครงสร้างข้อมูล 43 แฟ้ม',
       icon: Folder,
       items: [
-        { name: 'โครงสร้างข้อมูล 43 เเฟ้ม', type: 'pdf', link: 'https://drive.google.com/file/d/1dA3spvhGYqitzqbAhJg7iTGL4sTURHZF/view' },
+        { name: 'โครงสร้างข้อมูล 43 เเฟ้ม-Version-2.4.1_new', type: 'pdf', link: 'https://drive.google.com/file/d/1A3TLpqD-459BYGgf2cSAUauoYVUNOefl/view' },
       ]
     },
      {
