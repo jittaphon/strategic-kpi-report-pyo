@@ -22,4 +22,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('/post_data_tele_med', 'TeleMedController@storeTeleMedData');
     $router->post('/hdc_check/insert_data', 'HDCCheckController@InsertData');
     $router->get('/hdc_check/get_data', 'HDCCheckController@GetData');
+    $router->get('/utils/hcode_full_list', 'UtilsController@getHcodeListFull');
+    $router->get('/utils/type_hos_list', 'UtilsController@getListAffiliation');
 });

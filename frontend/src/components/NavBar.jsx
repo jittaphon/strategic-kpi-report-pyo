@@ -14,7 +14,7 @@ export default function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isKpiDropdownOpen, setIsKpiDropdownOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate(); // ← เพิ่ม useNavigate hook
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -46,6 +46,13 @@ export default function NavBar() {
       ],
     },
     {
+      id: "form-survey",
+      label: "แบบฟอร์มสำรวจ",
+      icon: FileText,
+      description: "รวบรวมแบบฟอร์มสำรวจต่างๆ",
+      path: "/form-survey",
+    },
+    {
       id: "other",
       label: "อื่นๆ / คู่มือ",
       icon: BookOpen,
@@ -54,32 +61,39 @@ export default function NavBar() {
     },
   ];
 
-  // หา active menu ตาม path ปัจจุบัน
   const currentPath = location.pathname;
+
+  // ✅ Logic แก้ใหม่: รองรับ path ลูกเช่น /form-survey/a
   const activeMenu =
-    menuItems.find((item) =>
-      item.hasSubMenu
-        ? item.subMenuItems.some((sub) => sub.path === currentPath)
-        : item.path === currentPath
-    )?.id || "home";
+    menuItems.find((item) => {
+      if (item.hasSubMenu) {
+        return (
+          currentPath === item.path ||
+          currentPath.startsWith(item.path + "/") ||
+          item.subMenuItems.some((sub) =>
+            currentPath.startsWith(sub.path)
+          )
+        );
+      }
+      return (
+        currentPath === item.path ||
+        currentPath.startsWith(item.path + "/")
+      );
+    })?.id || "home";
 
   const handleMenuClick = (path) => {
     setIsMobileMenuOpen(false);
     setIsKpiDropdownOpen(false);
-    if (path) {
-      navigate(path); // ← เปลี่ยนจาก router.navigate เป็น navigate
-    }
+    if (path) navigate(path);
   };
 
-  const toggleKpiDropdown = () => {
-    setIsKpiDropdownOpen(!isKpiDropdownOpen);
-  };
+  const toggleKpiDropdown = () => setIsKpiDropdownOpen(!isKpiDropdownOpen);
 
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50 backdrop-blur-lg bg-white/95">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center h-20">
-          {/* Logo Section */}
+          {/* Logo */}
           <div
             className="flex items-center gap-4 group cursor-pointer"
             onClick={() => handleMenuClick("/")}
@@ -149,7 +163,9 @@ export default function NavBar() {
                             to={sub.path}
                             onClick={() => handleMenuClick(sub.path)}
                             className={`w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors flex items-center gap-3 ${
-                              currentPath === sub.path ? "bg-blue-50" : ""
+                              currentPath.startsWith(sub.path)
+                                ? "bg-blue-50"
+                                : ""
                             }`}
                           >
                             <div className="w-2 h-2 rounded-full bg-blue-500" />
@@ -195,7 +211,7 @@ export default function NavBar() {
             })}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors ml-auto"
@@ -252,7 +268,7 @@ export default function NavBar() {
                             to={sub.path}
                             onClick={() => handleMenuClick(sub.path)}
                             className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                              currentPath === sub.path
+                              currentPath.startsWith(sub.path)
                                 ? "bg-blue-100"
                                 : "hover:bg-gray-100"
                             }`}
