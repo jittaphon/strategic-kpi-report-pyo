@@ -33,6 +33,7 @@ class UtilsController extends BaseController
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
+                'status' => 'error',
                 'message' => 'Failed to retrieve Hcode full list: ' . $e->getMessage()
             ], 500);
         }

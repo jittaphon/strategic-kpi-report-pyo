@@ -20,7 +20,7 @@ export const routes = createHashRouter([
       { path: "/kpi/:type", element: <KPIOverview /> },
       { path: "/files-43", element: <FilePage /> },
       { path: "/form-survey", element: <FormSurvey /> }, // ✅ หน้าเมนูหลัก
-      { path: "/form-survey/hdc2026", element: <FormA /> },
+      { path: "/form-survey/survey-hdc-2569", element: <FormA /> },
       { path: "/other", element: <Other /> },
     ],
   },

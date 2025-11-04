@@ -68,24 +68,37 @@ export default function FormA() {
     fetchAppointments();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setIsSubmitting(true);
-    
-    // จำลองการส่งข้อมูล
-    setTimeout(() => {
-      console.log("Form Data:", formData);
-      setIsSubmitting(false);
-      setSubmitted(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 1500);
-  };
+  if (!validateForm()) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  setIsSubmitting(true);
+try {
+  const res = await API.FormsApi.postAppointments(formData);
+
+  if (res.status === 200 || res.status === 201) {
+    // หน่วงสักครู่ให้ผู้ใช้รู้ว่ามีการประมวลผล
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    setSubmitted(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    console.error("❌ Unexpected response:", res);
+    alert("เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง");
+  }
+}
+ catch (error) {
+    console.error("🚨 Error submitting form:", error);
+    alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง");
+
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleSubmitAnother = () => {
     setSubmitted(false);
@@ -182,6 +195,9 @@ export default function FormA() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
+         <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+      <div className="absolute top-[20%] right-[-5%] w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+     
         {/* Header Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border-t-4 border-blue-500">
           <div className="flex items-start gap-4 mb-4">
@@ -379,7 +395,7 @@ export default function FormA() {
             {/* เรื่องที่สนใจ (Text Area) - ไม่บังคับ */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                เรื่องที่สนใจมากที่สุด <span className="text-gray-400 text-xs">(ไม่บังคับ)</span>
+                เรื่องที่สนใจมากที่สุด <span className="text-gray-400 text-xs"></span>
               </label>
               <textarea
                 name="interest_topic"

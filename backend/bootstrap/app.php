@@ -78,6 +78,10 @@ $app->middleware([
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
 ]);
+// ใน bootstrap/app.php
+$app->routeMiddleware([
+    'throttle' => App\Http\Middleware\RateLimit::class,
+]);
 
 /*
 |--------------------------------------------------------------------------

@@ -5,7 +5,7 @@ import { FileText, Sparkles, Clock } from "lucide-react";
 export default function FormSurvey() {
   const forms = [
     {
-      id: "hdc2026",
+      id: "survey-hdc-2569",
       label: "อบรมเชิงปฏิบัติการพัฒนาศักยภาพด้านการจัดการข้อมูลสุขภาพดิจิทัลตามโครงสร้างมาตรฐาน 43 แฟ้ม",
       description: "นำสู่คุณภาพคลังข้อมูล HDC ประจำปี 2569",
       isNew: true,
@@ -16,7 +16,9 @@ export default function FormSurvey() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header Section */}
+         <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+      <div className="absolute top-[20%] right-[-5%] w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+      
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -36,11 +38,12 @@ export default function FormSurvey() {
         {/* Forms Grid */}
         <div className="grid gap-6">
           {forms.map((form) => (
-            <Link
-              key={form.id}
-              to={`/form-survey/${form.id}`}
-              className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100"
-            >
+           <Link
+  key={form.id}
+  to={`/form-survey/${form.id}`}
+  className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 animate-fadeInUp"
+>
+
               {/* Gradient Accent Bar */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
               
