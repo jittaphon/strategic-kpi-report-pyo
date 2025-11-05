@@ -5,7 +5,6 @@ import { API } from "../../api";
 export default function FormA() {
   const [loading, setLoading] = useState(true);
   const [hospitalData, setHospitalData] = useState([]);
-  const [affiliationData, setAffiliationData] = useState([]);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,10 +51,10 @@ export default function FormA() {
     setLoading(true);
     try {
       const hospitalResponse = await API.utilsAPI.getHospitalAppointments();
-      const affiliationResponse = await API.utilsAPI.getAfiliateAppointments();
+  
 
       setHospitalData(hospitalResponse.data.data);
-      setAffiliationData(affiliationResponse.data.data);
+   
 
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -194,7 +193,7 @@ try {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
          <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
       <div className="absolute top-[20%] right-[-5%] w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
      
@@ -206,14 +205,8 @@ try {
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                แบบฟอร์มสำรวจข้อมูลผู้เข้าร่วมอบรม
-              </h1>
-              <p className="text-gray-600">
-                อบรมเชิงปฏิบัติการพัฒนาศักยภาพด้านการจัดการข้อมูลสุขภาพดิจิทัล ตามโครงสร้างมาตรฐาน 43 แฟ้ม
-              </p>
-              <p className="text-sm text-blue-600 font-medium mt-2">
-                HDC ประจำปี 2569
-              </p>
+        ลงทะเบียนสำรวจประเภทความต้องการเข้าร่วมประชุม <br />HDC  และ 43 แฟ้ม ปี 2569
+      </h1>
             </div>
           </div>
           
@@ -328,75 +321,83 @@ try {
 
             {/* หน่วยบริการสุขภาพ (Dropdown) */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <Heart className="w-4 h-4 inline mr-1 text-red-500" />
-                หน่วยบริการสุขภาพ <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="health_unit"
-                value={formData.health_unit}
-                onChange={handleChange}
-                className={`w-full border-2 rounded-xl p-3 focus:ring-2 focus:ring-blue-200 transition-all outline-none ${
-                  errors.health_unit ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'
-                }`}
-              >
-                <option value="">เลือกหน่วยบริการสุขภาพ</option>
-                {hospitalData.map((hospital, index) => (
-                  <option key={index} value={hospital.HmainOP_FULL}>
-                    {hospital.HmainOP_FULL}
-                  </option>
-                ))}
-              </select>
-              {errors.health_unit && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.health_unit}
-                </p>
-              )}
-            </div>
-
-            {/* สังกัด (Dropdown) */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <Briefcase className="w-4 h-4 inline mr-1 text-blue-500" />
-                สังกัด <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="affiliation"
-                value={formData.affiliation}
-                onChange={handleChange}
-                className={`w-full border-2 rounded-xl p-3 focus:ring-2 focus:ring-blue-200 transition-all outline-none ${
-                  errors.affiliation ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'
-                }`}
-              >
-                <option value="">เลือกสังกัด</option>
-                {affiliationData.map((affiliation, index) => (
-                  <option key={index} value={affiliation.type_hos}>
-                    {affiliation.type_hos}
-                  </option>
-                ))}
-              </select>
-              {errors.affiliation && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.affiliation}
-                </p>
-              )}
-            </div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2">
+    หน่วยบริการสุขภาพที่ท่านปฏิบัติงาน <span className="text-red-500">*</span>
+  </label>
+  <select
+    name="health_unit"
+    value={formData.health_unit}
+    onChange={handleChange}
+    className={`w-full border-2 rounded-xl p-3 focus:ring-2 focus:ring-blue-200 transition-all outline-none ${
+      errors.health_unit ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'
+    } ${!formData.health_unit && 'text-gray-400'}`}
+  >
+    <option value="" disabled hidden className="text-gray-400">ค้นหารหัสหน่วยบริการของท่าน</option>
+    {hospitalData.map((hospital, index) => (
+      <option key={index} value={hospital.HmainOP_FULL} className="text-gray-900">
+        {hospital.HmainOP_FULL}
+      </option>
+    ))}
+  </select>
+  {errors.health_unit && (
+    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+      <AlertCircle className="w-3 h-3" />
+      {errors.health_unit}
+    </p>
+  )}
+</div>
+         {/* สังกัด (Dropdown) */}
+<div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2">
+    สังกัด <span className="text-red-500">*</span>
+  </label>
+  <select
+    name="affiliation"
+    value={formData.affiliation === 'อื่นๆ' ? 'อื่นๆ' : (formData.affiliation && !['กระทรวงสาธารณสุข', 'องค์การบริหารส่วนจังหวัดพะเยา', 'เทศบาล', 'รพ.ค่ายขุนเจืองฯ', 'รพ.มหาวิทยาลัยพะเยา'].includes(formData.affiliation) ? 'อื่นๆ' : formData.affiliation)}
+    onChange={handleChange}
+    className={`w-full border-2 rounded-xl p-3 focus:ring-2 focus:ring-blue-200 transition-all outline-none ${
+      errors.affiliation ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'
+    } ${!formData.affiliation && 'text-gray-400'}`}
+  >
+    <option value="" disabled hidden className="text-gray-400">เลือกสังกัด</option>
+    <option value="กระทรวงสาธารณสุข" className="text-gray-900">กระทรวงสาธารณสุข</option>
+    <option value="องค์การบริหารส่วนจังหวัดพะเยา" className="text-gray-900">องค์การบริหารส่วนจังหวัดพะเยา</option>
+    <option value="เทศบาล" className="text-gray-900">เทศบาล</option>
+    <option value="รพ.ค่ายขุนเจืองฯ" className="text-gray-900">รพ.ค่ายขุนเจืองฯ</option>
+    <option value="รพ.มหาวิทยาลัยพะเยา" className="text-gray-900">รพ.มหาวิทยาลัยพะเยา</option>
+    <option value="อื่นๆ" className="text-gray-900">อื่นๆ</option>
+  </select>
+  
+  {(formData.affiliation === 'อื่นๆ' || (formData.affiliation && !['กระทรวงสาธารณสุข', 'องค์การบริหารส่วนจังหวัดพะเยา', 'เทศบาล', 'รพ.ค่ายขุนเจืองฯ', 'รพ.มหาวิทยาลัยพะเยา', ''].includes(formData.affiliation))) && (
+    <input
+      type="text"
+      name="affiliation"
+      value={formData.affiliation === 'อื่นๆ' ? '' : formData.affiliation}
+      onChange={handleChange}
+      placeholder="กรุณาระบุสังกัด"
+      className="w-full border-2 rounded-xl p-3 focus:ring-2 focus:ring-blue-200 transition-all outline-none border-gray-200 focus:border-blue-500 mt-3"
+    />
+  )}
+  
+  {errors.affiliation && (
+    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+      <AlertCircle className="w-3 h-3" />
+      {errors.affiliation}
+    </p>
+  )}
+</div>
 
             {/* ความสนใจ */}
             <div className="border-l-4 border-purple-500 pl-4 mb-6 mt-8">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-purple-500" />
-                เรื่องที่สนใจในการอบรม
+                
+             ท่านต้องการให้อบรมเรื่องอะไร ( เรื่องอะไรที่ต้องการทราบเพิ่มเติม ) <span className="text-gray-400 text-xs"></span> <span className="text-red-500">* ห้ามว่าง</span>
               </h2>
             </div>
 
             {/* เรื่องที่สนใจ (Text Area) - ไม่บังคับ */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                เรื่องที่สนใจมากที่สุด <span className="text-gray-400 text-xs"></span>
-              </label>
+             
               <textarea
                 name="interest_topic"
                 value={formData.interest_topic}
@@ -410,52 +411,60 @@ try {
               </p>
             </div>
 
-            {/* รูปแบบการอบรม */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                รูปแบบการอบรมที่ต้องการ <span className="text-red-500">*</span>
-              </label>
-              <div className="grid md:grid-cols-2 gap-4">
-                <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group ${
-                  errors.training_format ? 'border-red-500' : 'border-gray-200'
-                }`}>
-                  <input
-                    type="radio"
-                    name="training_format"
-                    value="onsite"
-                    checked={formData.training_format === "onsite"}
-                    onChange={handleChange}
-                    className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                  />
-                  <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">
-                    อบรม ณ ห้องประชุม สสจ.พะเยา (Onsite)
-                  </span>
-                </label>
+           {/* รูปแบบการอบรม */}
+<div>
+  <div className="border-l-4 border-purple-500 pl-4 mb-6 mt-8">
+    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+      ปีงบ 2569 นี้ สสจ.พะเยาจะจัดอบรมเกี่ยวกับ HDC และ 43 แฟ้ม ท่านต้องการเข้าร่วมอบรมในรูปแบบใด<span className="text-red-500">*</span>
+    </h2>
+  </div>
+  
+  <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-200 mb-4">
+    <p className="text-sm text-gray-700 leading-relaxed">
+      <span className="font-semibold text-amber-700">📌 หมายเหตุ:</span> สสจ.จะนับยอดจำนวนผู้ต้องการเข้าร่วมอบรมแบบ Onsite เพื่อเตรียมแผนในการขออนุมัติงบประมาณในการจัดอบรม ดังนั้นท่านที่ลงทะเบียนว่าต้องการมาอบรม ณ ห้องประชุม สสจ.พะเยา (Onsite) หากท่านไม่ได้มาร่วมอบรมในวันจัดอบรม ขอให้ท่านส่งตัวแทนเข้าร่วมอบรมด้วยนะค่ะ โดยจะจัดอบรมประมาณเดือน ธันวาคม 2568
+    </p>
+  </div>
 
-                <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group ${
-                  errors.training_format ? 'border-red-500' : 'border-gray-200'
-                }`}>
-                  <input
-                    type="radio"
-                    name="training_format"
-                    value="online"
-                    checked={formData.training_format === "online"}
-                    onChange={handleChange}
-                    className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                  />
-                  <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">
-                    อบรมออนไลน์ ทาง ZOOM (Online ) 
-                  </span>
-                </label>
-              </div>
-              {errors.training_format && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.training_format}
-                </p>
-              )}
-            </div>
+  <div className="grid md:grid-cols-2 gap-4">
+    <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group ${
+      errors.training_format ? 'border-red-500' : 'border-gray-200'
+    }`}>
+      <input
+        type="radio"
+        name="training_format"
+        value="onsite"
+        checked={formData.training_format === "onsite"}
+        onChange={handleChange}
+        className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
+      />
+      <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">
+        อบรม ณ ห้องประชุม สสจ.พะเยา (Onsite)
+      </span>
+    </label>
 
+    <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group ${
+      errors.training_format ? 'border-red-500' : 'border-gray-200'
+    }`}>
+      <input
+        type="radio"
+        name="training_format"
+        value="online"
+        checked={formData.training_format === "online"}
+        onChange={handleChange}
+        className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
+      />
+      <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">
+        อบรมออนไลน์ ทาง ZOOM (Online)
+      </span>
+    </label>
+  </div>
+  {errors.training_format && (
+    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+      <AlertCircle className="w-3 h-3" />
+      {errors.training_format}
+    </p>
+  )}
+</div>
             {/* Submit Button */}
             <div className="pt-6 border-t-2 border-gray-100">
               <button

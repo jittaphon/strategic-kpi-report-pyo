@@ -25,14 +25,39 @@ class UtilsController extends BaseController
                 ->orderBy('HmainOP_FULL')
                 ->get();
 
+            // เพิ่มสถานบริการเพิ่มเติม (จะแทรกหลัง priority hospitals)
+            $additionalHospitals = collect([
+                ['Hcode' => '00043', 'HmainOP_FULL' => '00043 สำนักงานสาธารณสุขจังหวัดพะเยา'],
+                ['Hcode' => '00605', 'HmainOP_FULL' => '00605 สำนักงานสาธารณสุขอำเภอเมืองพะเยา'],
+                ['Hcode' => '00606', 'HmainOP_FULL' => '00606 สำนักงานสาธารณสุขอำเภอจุน'],
+                ['Hcode' => '00607', 'HmainOP_FULL' => '00607 สำนักงานสาธารณสุขอำเภอเชียงคำ'],
+                ['Hcode' => '00608', 'HmainOP_FULL' => '00608 สำนักงานสาธารณสุขอำเภอเชียงม่วน'],
+                ['Hcode' => '00609', 'HmainOP_FULL' => '00609 สำนักงานสาธารณสุขอำเภอดอกคำใต้'],
+                ['Hcode' => '00610', 'HmainOP_FULL' => '00610 สำนักงานสาธารณสุขอำเภอปง'],
+                ['Hcode' => '00611', 'HmainOP_FULL' => '00611 สำนักงานสาธารณสุขอำเภอแม่ใจ'],
+                ['Hcode' => '00612', 'HmainOP_FULL' => '00612 สำนักงานสาธารณสุขอำเภอภูซาง'],
+                ['Hcode' => '14156', 'HmainOP_FULL' => '14156 สำนักงานสาธารณสุขอำเภอภูกามยาว'],
+            ]);
+
+            // แยกข้อมูลออกเป็น priority และ non-priority
+            $priorityList = $hcodeFullList->filter(function ($item) use ($priorityHospitals) {
+                return in_array($item->Hcode, $priorityHospitals);
+            });
+
+            $nonPriorityList = $hcodeFullList->filter(function ($item) use ($priorityHospitals) {
+                return !in_array($item->Hcode, $priorityHospitals);
+            });
+
+            // รวมข้อมูลตามลำดับ: priority -> additional -> non-priority
+            $hcodeFullList = $priorityList->concat($additionalHospitals)->concat($nonPriorityList);
+
             return response()->json([
                 'status' => 'success',
-                'data' => $hcodeFullList,
+                'data' => $hcodeFullList->values(), // reset index
                 'message' => 'Successfully retrieved Hcode full list.'
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
                 'status' => 'error',
                 'message' => 'Failed to retrieve Hcode full list: ' . $e->getMessage()
             ], 500);
