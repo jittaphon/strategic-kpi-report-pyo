@@ -8,7 +8,12 @@ export default function FormA() {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [showPopup, setShowPopup] = useState(() => {
+    // เช็คว่าเคยปิด popup ไปแล้วหรือยัง
+    const hasSeenPopup = localStorage.getItem('hasSeenFormPopup');
+    return !hasSeenPopup;
+  });
+  const [isClosing, setIsClosing] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     first_name: "",
@@ -18,6 +23,15 @@ export default function FormA() {
     interest_topic: "",
     training_format: ""
   });
+
+  const handleClosePopup = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowPopup(false);
+      localStorage.setItem('hasSeenFormPopup', 'true');
+      setIsClosing(false);
+    }, 300);
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -193,6 +207,56 @@ try {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
+      {/* Popup Modal - แสดงครั้งแรกที่เข้าหน้า */}
+      {showPopup && (
+        <div 
+          className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${
+            isClosing ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <div 
+            className={`bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-all duration-300 ${
+              isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+            }`}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6 rounded-t-2xl">
+              <div className="flex items-center gap-3 text-white">
+                <AlertCircle className="w-8 h-8 flex-shrink-0" />
+                <h2 className="text-2xl font-bold">วัตถุประสงค์การลงทะเบียน</h2>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-8">
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border-2 border-amber-200 mb-6">
+                <p className="text-gray-700 leading-relaxed text-base">
+                  <span className="font-bold text-amber-700 text-lg">📌 วัตถุประสงค์ครั้งนี้เพื่อ:</span>
+                  <br /><br />
+                  สสจ.จะนับยอดจำนวนผู้ต้องการเข้าร่วมอบรมแบบ Onsite เพื่อเตรียมแผนในการขออนุมัติงบประมาณในการจัดอบรม 
+                  <br /><br />
+                  ดังนั้นท่านที่ลงทะเบียนว่าต้องการมาอบรม ณ ห้องประชุม สสจ.พะเยา (Onsite) 
+                  หากท่านไม่ได้มาร่วมอบรมในวันจัดอบรม{" "}
+                  <span className="font-semibold text-amber-700">ขอให้ท่านส่งตัวแทนเข้าร่วมอบรมด้วยนะคะ</span>
+                  <br /><br />
+                  โดยจะจัดอบรมประมาณเดือน{" "}
+                  <span className="font-bold text-amber-700 text-lg">ธันวาคม 2568</span>
+                </p>
+              </div>
+
+              {/* Button */}
+              <button
+                onClick={handleClosePopup}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold py-4 px-6 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group"
+              >
+                <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>รับทราบและดำเนินการต่อ</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto">
          <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
       <div className="absolute top-[20%] right-[-5%] w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
