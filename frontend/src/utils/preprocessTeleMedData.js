@@ -8,9 +8,13 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
         baseDataMap.set(hospcodeHosname, item);
     });
 
+
+
     let currentMonth = null;
     let currentYear = null;
     let currentDay = null; // เพิ่มตัวแปรสำหรับวัน
+
+
 
     // --- Logic เพิ่มเติม: แปลง date จาก String ภาษาไทย เป็น Date Object ที่ถูกต้อง ---
     if (date) {
@@ -52,9 +56,14 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
         const hospcodeHosname = apiItem.HOSPCODE_HOSNAME;
         const correctTotalFromApi = parseInt(apiItem.Total) || 0; // Total นี้มาจาก API กระทรวง
 
+        
+        
+
+ 
+
         // ดึงข้อมูลที่ตรงกันจาก baseDataMap
         const baseItem = baseDataMap.get(hospcodeHosname);
-
+  
         // ดึงค่าบริการรายเดือนจาก baseData ถ้ามี ถ้าไม่มี ให้เป็น 0 (ใช้ _base เพื่อความชัดเจน)
         const total_october = baseItem ? (parseInt(baseItem.total_october) || 0) : 0;
         const total_november = baseItem ? (parseInt(baseItem.total_november) || 0) : 0;
@@ -71,6 +80,8 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
         let total_august_base = baseItem ? (parseInt(baseItem.total_august) || 0) : 0;
         let total_september_base = baseItem ? (parseInt(baseItem.total_september) || 0) : 0;
 
+        
+
         // คำนวณผลรวมของเดือนที่มีข้อมูลจริงจาก baseData (ต.ค. - ก.พ.)
         const sumOfKnownPreviousMonths =
             total_october +
@@ -81,6 +92,8 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
 
         // ยอดส่วนต่างที่ต้องนำไปปันส่วน
         const remainingTotalToDistribute = Math.max(0, correctTotalFromApi - sumOfKnownPreviousMonths);
+
+       
 
         // กำหนดค่าเริ่มต้นของเดือนทั้งหมดตาม baseData ก่อน (ถ้าไม่มีข้อมูลก็จะเริ่มจาก 0)
         let final_total_march = total_march_base;
@@ -93,7 +106,7 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
 
         // Logic การปันส่วนยอดที่เพิ่มขึ้นตามเดือนปัจจุบัน (currentMonth) และวัน (currentDay)
         // **ปรับแก้ให้ยอดส่วนต่างไปลงที่ final_total_march เสมอ หากเป็นเดือน มี.ค. - ก.ย.**
-        if (currentMonth >= 3 && currentMonth <= 9) { // ครอบคลุม มี.ค. ถึง ก.ย.
+        if (currentMonth >= 3 && currentMonth <= 12) { // ครอบคลุม มี.ค. ถึง ก.ย.
             final_total_march = remainingTotalToDistribute; // ให้ยอดทั้งหมดไปลงที่ มี.ค.
             // เดือนอื่นๆ กลับไปใช้ค่า baseData เดิมทั้งหมด
             final_total_april = total_april_base;
@@ -122,6 +135,7 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
             total_august: final_total_august,
             total_september: final_total_september,
         };
+
     });
 
     // เรียงลำดับข้อมูลตาม Total ที่ถูกต้อง (จาก API กระทรวง)
@@ -197,6 +211,9 @@ export function preprocessTeleMedData(baseData, apiTotals, date) {
             },
         })),
     ];
+
+
+   
 
     return {
         columns,
