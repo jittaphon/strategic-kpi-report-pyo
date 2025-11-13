@@ -21,7 +21,8 @@ export default function FormA() {
     health_unit: "",
     affiliation: "",
     interest_topic: "",
-    training_format: ""
+    training_format: "",
+    type: "survey-hdc-2569"
   });
 
   const handleClosePopup = () => {
