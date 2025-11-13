@@ -236,7 +236,7 @@ try {
                   สสจ.จะนับยอดจำนวนผู้ต้องการเข้าร่วมอบรมแบบ Onsite เพื่อเตรียมแผนในการขออนุมัติงบประมาณในการจัดอบรม 
                   <br /><br />
                   ดังนั้นท่านที่ลงทะเบียนว่าต้องการมาอบรม ณ ห้องประชุม สสจ.พะเยา (Onsite) 
-                  หากท่านไม่ได้มาร่วมอบรมในวันจัดอบรม{" "}
+                  หากท่านไม่ได้มาร่วมอบรมในวันจัดอบรม 43 เเฟ้ม เเละ HDC ปีงบ 2569{" "}
                   <span className="font-semibold text-amber-700">ขอให้ท่านส่งตัวแทนเข้าร่วมอบรมด้วยนะคะ</span>
                   <br /><br />
                   โดยจะจัดอบรมประมาณเดือน{" "}
@@ -502,7 +502,7 @@ try {
         className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
       />
       <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">
-        อบรม ณ ห้องประชุม สสจ.พะเยา (Onsite)
+        ฉันต้องการ อบรม ณ ห้องประชุม สสจ.พะเยา (Onsite)
       </span>
     </label>
 
@@ -518,7 +518,7 @@ try {
         className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
       />
       <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">
-        อบรมออนไลน์ ทาง ZOOM (Online)
+       ฉันต้องการ อบรมออนไลน์ ทาง ZOOM (Online)
       </span>
     </label>
   </div>
