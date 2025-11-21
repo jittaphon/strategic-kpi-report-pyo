@@ -276,7 +276,7 @@ setHospitalData(
     placeholder={`- กายภาพ
 - ทันตกรรม
 - แพทย์แผนไทย
-- Telemedicine`}
+- Telemedicine (ระบุคลินิก เช่น NCD, ANC ฯลฯ)`}
     className={`w-full border-2 rounded-xl p-3 focus:ring-2 focus:ring-blue-200 transition-all outline-none resize-none ${
       errors.interest_topic
         ? 'border-red-500 focus:border-red-500'

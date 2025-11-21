@@ -11,13 +11,13 @@ export default function FormSurvey() {
       isNew: true,
       date: "พ.ย. 2568"
     },
-     {
+     /*{
       id: "survey-tele-2569",
       label: "แผนการเปิดคลินิกบริการนัดหมาย Online ผ่าน หมอพร้อม",
       description: "แผนการเปิดคลินิกบริการนัดหมาย Online ผ่าน หมอพร้อม ประจำปี 2569",
       isNew: true,
       date: "พ.ย. 2568"
-    },
+    },*/
   ];
 
   return (
