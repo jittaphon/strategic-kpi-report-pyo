@@ -101,7 +101,7 @@ export default function NavBar() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
               <img
-                src="https://pyo.moph.go.th/datahub/strategic-kpi-report-pyo/public/images/icon.png"
+                src="https://pyo.moph.go.th/datahub/pyo-kpi/public/images/icon.png"
                 alt="Health Icon"
                 className="w-12 h-12 relative z-10 drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
               />
