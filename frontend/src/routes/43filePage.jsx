@@ -20,7 +20,7 @@ const FilePage = () => {
 
   const containerRef = useRef();
   const [mounted, setMounted] = useState(false);
-  const [fiscalYear, setFiscalYear] = React.useState('ปีงบ 2568');
+  const [fiscalYear, setFiscalYear] = React.useState('ปีงบ 2569');
   const [data, setData] = useState([]); 
   const [globalFilter, setGlobalFilter] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -71,10 +71,12 @@ const FilePage = () => {
   };
 
 const FetchDataGet = async (year) => {
-  if (year === 'ปีงบ 2568') {
-    year = 2025;
-  }
-
+  if (year === "ปีงบ 2568") {
+      year = 2025;
+    }
+     if (year === "ปีงบ 2569") {
+      year = 2026;
+    }
   setIsLoading(true);
 
   // delay 500ms (0.5 วินาที)

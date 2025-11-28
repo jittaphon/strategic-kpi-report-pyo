@@ -53,50 +53,55 @@ class HDCCheckController extends BaseController
             ], 500);
         }
     }
-    public function GetData(Request $request)
-    {
-        try {
-            // รับปีงบจาก request (เช่น 2025) ถ้าไม่ส่งมาให้ใช้ปีปัจจุบัน
-            $budgetYear = $request->input('budget_year', date('Y'));
+public function GetData(Request $request)
+{
+    try {
+        $budgetYear = $request->input('budget_year', date('Y'));
 
-            $startYear = $budgetYear - 1;
-            $startMonth = 10; // ต.ค. คือเดือนเริ่มต้นของปีงบประมาณ
+        // ถ้าส่งเป็น พ.ศ. → แปลงเป็น ค.ศ.
+        if ($budgetYear > 2500) {
+            $budgetYear -= 543;
+        }
 
-            // สร้างช่วงเดือน 12 เดือน
-            $months = [];
-            for ($i = 0; $i < 12; $i++) {
-                $year = $startYear + floor(($startMonth + $i - 1) / 12);
-                $month = str_pad((($startMonth + $i - 1) % 12) + 1, 2, '0', STR_PAD_LEFT);
-                $yymm = "$year-$month";
+        // คำนวณปีเริ่มต้นของงบประมาณ (ต.ค. ของปีก่อน)
+        // ปีงบ 2025 = ต.ค. 2024 ถึง ก.ย. 2025
+        $startDate = Carbon::create($budgetYear - 1, 10, 1); // เริ่มที่ ต.ค. ของปีก่อน
 
-                // alias เช่น Oct_24, Jan_25
-                $alias = date("M_y", strtotime("$yymm-01"));
+        // สร้างช่วงเดือนครบ 12 เดือน
+        $months = [];
+        for ($i = 0; $i < 12; $i++) {
+            $currentDate = $startDate->copy()->addMonths($i);
+            $yymm = $currentDate->format('Y-m');
+            $alias = $currentDate->format('M_y'); // เช่น Oct_24, Nov_24
 
-                $months[] = "MAX(CASE WHEN yymm='$yymm' THEN total ELSE 0 END) AS `$alias`";
-            }
+            $months[] = "MAX(CASE WHEN yymm='$yymm' THEN total ELSE 0 END) AS `$alias`";
+        }
 
-            $monthColumns = implode(",\n       ", $months);
+        $monthColumns = implode(",\n       ", $months);
 
-            // ประกอบ SQL สุดท้าย
-            $sql = "
-            SELECT hosp_code, hosp_name,
-                   $monthColumns
-            FROM tb_hdc_send_summary
-            GROUP BY hosp_code, hosp_name
-            ORDER BY hosp_code
+        $sql = "
+        SELECT hosp_code, hosp_name,
+               $monthColumns
+        FROM tb_hdc_send_summary
+        GROUP BY hosp_code, hosp_name
+        ORDER BY hosp_code
         ";
 
-            $results = DB::select($sql);
+        $results = DB::select($sql);
 
-            return response()->json([
-                'status' => 'Database connection successful',
-                'budget_year' => $budgetYear,
-                'data' => $results
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Database connection failed: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'status' => 'Database connection successful',
+            'budget_year' => $budgetYear,
+            'start_period' => $startDate->format('Y-m'),
+            'end_period' => $startDate->copy()->addMonths(11)->format('Y-m'),
+            'data' => $results
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Database connection failed: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 }

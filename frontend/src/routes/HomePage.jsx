@@ -22,7 +22,7 @@ const HomePage = () => {
   const containerRef = useRef();
   const [chartData, setChartData] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const [fiscalYear, setFiscalYear] = React.useState('ปีงบ 2568');
+  const [fiscalYear, setFiscalYear] = React.useState('ปีงบ 2569');
   const [data43, setData43] = useState(0);
 
   useEffect(() => {
@@ -35,6 +35,10 @@ const Fetch43FileData = async (year) => {
     if (year === "ปีงบ 2568") {
       year = 2025;
     }
+     if (year === "ปีงบ 2569") {
+      year = 2026;
+    }
+
 
     const File_43data = await API.hdccheckAPI.getAppointments(year);
     setData43(File_43data.data.data.length)
@@ -230,8 +234,8 @@ const Fetch43FileData = async (year) => {
     },
   }}
 >
+    <Select.Option value="2026">ปีงบ 2569</Select.Option>
   <Select.Option value="2025">ปีงบ 2568</Select.Option>
-  <Select.Option value="2026">ปีงบ 2569</Select.Option>
 </Select>
 
   </div>
