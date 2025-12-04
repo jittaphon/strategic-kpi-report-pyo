@@ -2,6 +2,7 @@
 import { useParams } from 'react-router-dom'; // เปลี่ยนเป็น react-router-dom
 import KPITeleMed from '../View/KPITeleMed';
 import KPINcdRegistry from '../View/KPINcdRegistry';
+import KPITeleMedV2 from "../View/KPITeleMedV2.jsx";
 import React from 'react';
 
 export default function KPIOverview() {
@@ -22,7 +23,7 @@ export default function KPIOverview() {
     
     switch (type) {
       case 'tele_med': 
-        return <KPITeleMed />;
+        return <KPITeleMedV2 />;
       case 'ncd_registry': 
         return <KPINcdRegistry />;
       case 'emergency': 

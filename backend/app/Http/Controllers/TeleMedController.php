@@ -136,4 +136,59 @@ class TeleMedController extends BaseController
             ], 500);
         }
     }
+
+     public function getTeleMedV2(Request $request)
+{
+    try {
+        $budgetYear = $request->input('budget_year', date('Y'));
+
+        // ถ้าผู้ใช้ส่ง พ.ศ. เช่น 2568 → 2025
+        if ($budgetYear > 2500) {
+            $budgetYear -= 543;
+        }
+
+        // ช่วงต.ค.ปีที่แล้ว → ก.ย.ปีนี้
+        // เช่น ปีงบ 2025 → 2024-10 ถึง 2025-09
+        $start = Carbon::create($budgetYear - 1, 10, 1);
+        $end   = Carbon::create($budgetYear, 9, 1);
+
+        // แปลง yyyyMM สำหรับเทียบใน SQL
+        $startYm = (int)$start->format('Ym');
+        $endYm   = (int)$end->format('Ym');
+
+        $sql = "
+            SELECT
+                HOSPCODE,
+                HOSNAME,
+                year,
+                month,
+                cnt,
+                CONCAT(year, '-', LPAD(month, 2, '0')) AS yymm
+            FROM tele_med_new
+            WHERE (year * 100 + month) BETWEEN :startYm AND :endYm
+            ORDER BY HOSPCODE, year, month
+        ";
+
+        $results = DB::select($sql, [
+            'startYm' => $startYm,
+            'endYm'   => $endYm
+        ]);
+
+        return response()->json([
+            'status'        => 'OK',
+            'budget_year'   => $budgetYear,
+            'period_start'  => $start->format('Y-m'),
+            'period_end'    => $end->format('Y-m'),
+            'data'          => $results
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+     }     
+
+
+     
 }

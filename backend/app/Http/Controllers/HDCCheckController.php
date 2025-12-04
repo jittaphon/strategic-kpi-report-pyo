@@ -93,7 +93,7 @@ public function GetData(Request $request)
             'status' => 'Database connection successful',
             'budget_year' => $budgetYear,
             'start_period' => $startDate->format('Y-m'),
-            'end_period' => $startDate->copy()->addMonths(11)->format('Y-m'),
+            'end_period' => $startDate->copy()->addMonths(value: 11)->format('Y-m'),
             'data' => $results
         ]);
 
