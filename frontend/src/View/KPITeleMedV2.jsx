@@ -4,7 +4,7 @@ import { Select } from 'antd';
 import Table from '../components/Table';
 import Chart from '../components/Chart';
 export default function KPITeleMedV2() {
-  const [year, setYear] = useState("2025");
+  const [year, setYear] = useState("2026");
   const [baseData, setBaseData] = useState([]);
   const [loading, setLoading] = useState(false);
 

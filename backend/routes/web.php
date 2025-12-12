@@ -27,8 +27,13 @@ $router->group([
     
     $router->post('/hdc_check/insert_data', 'HDCCheckController@InsertData');
     $router->get('/hdc_check/get_data', 'HDCCheckController@GetData');
+    $router->post('/hdc_check/report_data', 'HDCCheckController@GetHDCData');   
 
     $router->get('/utils/hcode_full_list', 'UtilsController@getHcodeListFull');
     $router->get('/utils/type_hos_list', 'UtilsController@getListAffiliation');
     $router->post('/forms/insert', 'FormController@InsertForms');
+
+  
 });
+
+

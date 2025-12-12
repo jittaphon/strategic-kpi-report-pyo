@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 use Carbon\Carbon; // จำเป็นสำหรับการจัดการวันที่
-
+use Illuminate\Support\Facades\Http;
 class HDCCheckController extends BaseController
 {
     /**
@@ -53,7 +53,8 @@ class HDCCheckController extends BaseController
             ], 500);
         }
     }
-public function GetData(Request $request)
+
+    public function GetData(Request $request)
 {
     try {
         $budgetYear = $request->input('budget_year', date('Y'));
@@ -102,6 +103,43 @@ public function GetData(Request $request)
             'error' => 'Database connection failed: ' . $e->getMessage()
         ], 500);
     }
+    }
+   public function GetHDCData(Request $request)
+{
+    try {
+
+        $params = [
+            "tableName" => $request->input("tableName", "s_opd_all"),
+            "year"      => $request->input("year", "2569"),
+            "province"  => $request->input("province", "56"),
+            "type"      => $request->input("type", "json")
+        ];
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json'
+        ])->post('https://opendata.moph.go.th/api/report_data', $params);
+
+        if ($response->failed()) {
+            return response()->json([
+                'error' => 'เรียก API MOPH ไม่สำเร็จ',
+                'detail' => $response->body()
+            ], 500);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'sent_params' => $params,
+            'data' => $response->json()
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'เกิดข้อผิดพลาด',
+            'detail' => $e->getMessage()
+        ], 500);
+    }
 }
+
+
 
 }

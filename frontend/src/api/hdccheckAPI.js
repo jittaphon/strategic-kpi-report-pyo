@@ -6,6 +6,9 @@ getAppointments(budgetYear) {
 ,
   postAppointments(payload) {
     return axiosClient.post("/api/hdc_check/insert_data", payload);
+},
+getReportS_OPD(params) {
+  return axiosClient.post("/api/hdc_check/report_data",  params );
 }
 };
 

@@ -22,94 +22,122 @@ const HomePage = () => {
   const containerRef = useRef();
   const [chartData, setChartData] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const [fiscalYear, setFiscalYear] = React.useState('ปีงบ 2569');
+  const [fiscalYear, setFiscalYear] = React.useState('2569');
   const [data43, setData43] = useState(0);
+  const [currentDate, setCurrentDate] = React.useState(getThaiDate());
 
-  useEffect(() => {
-    setMounted(true);
-    Fetch43FileData(fiscalYear)
-  }, [fiscalYear])
+  function getThaiDate() {
+  const months = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+    'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+    'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+  ];
+  
+  const now = new Date();
+  const day = now.getDate();
+  const month = months[now.getMonth()];
+  const year = now.getFullYear() + 543; // แปลง ค.ศ. เป็น พ.ศ.
+  
+  return `${day} ${month} ${year}`;
+}
 
-const Fetch43FileData = async (year) => {
+
+// ฟังก์ชันแปลงรหัสพื้นที่เป็นชื่ออำเภอ
+const getDistrictName = (areaCode) => {
+  const districtMap = {
+    '5601': 'เมืองพะเยา',
+    '5602': 'จุน',
+    '5603': 'เชียงคำ',
+    '5604': 'เชียงม่วน',
+    '5605': 'ดอกคำใต้',
+    '5606': 'ปง',
+    '5607': 'แม่ใจ',
+    '5608': 'ภูซาง',
+    '5609': 'ภูคามยาว'
+  };
+  
+  return districtMap[areaCode] || areaCode;
+};
+
+useEffect(() => {
+  setMounted(true);
+  Fetch43FileData(fiscalYear)
+}, [fiscalYear])
+
+const groupByAreadcode = (data) => {
+  const grouped = {};
+
+  data.forEach((item) => {
+    const area = item.areacode.slice(0, 4); // ดึงรหัสอำเภอ เช่น 5601
+
+    if (!grouped[area]) {
+      grouped[area] = {
+        area,
+        sum_result: 0,
+        sum_target: 0,
+        count: 0,
+        hospcodes: []
+      };
+    }
+
+    grouped[area].sum_result += Number(item.result || 0);
+    grouped[area].sum_target += Number(item.target || 0);
+    grouped[area].count++;
+    grouped[area].hospcodes.push(item.hospcode);
+  });
+
+  return Object.values(grouped);
+};
+
+const Fetch43FileData = async (yearBE) => {
+
   try {
-    if (year === "ปีงบ 2568") {
-      year = 2025;
-    }
-     if (year === "ปีงบ 2569") {
-      year = 2026;
-    }
+    const res = await API.hdccheckAPI.getReportS_OPD({ year: yearBE});
+
+    const summary = groupByAreadcode(res.data.data);
 
 
-    const File_43data = await API.hdccheckAPI.getAppointments(year);
-    setData43(File_43data.data.data.length)
+    // นับจำนวนสถานบริการทั้งหมด
+    const totalHospitals = summary.reduce((sum, item) => sum + item.count, 0);
+    setData43(totalHospitals);
 
-    const totalsByMonth = {};
-    File_43data.data.data.forEach((row) => {
-      Object.entries(row).forEach(([key, value]) => {
-        if (key.includes("_")) {
-          // ตัดเหลือเฉพาะชื่อเดือน เช่น "Oct_24" → "Oct"
-          const monthKey = key.split("_")[0];
-          totalsByMonth[monthKey] =
-            (totalsByMonth[monthKey] || 0) + (Number(value) || 0);
-        }
-      });
-    });
-
-    // ลำดับเดือน (ชื่อย่ออังกฤษ)
-    const monthOrder = [
-      "Oct", "Nov", "Dec",
-      "Jan", "Feb", "Mar",
-      "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep"
-    ];
-
-    // Mapping อังกฤษ → ไทย (เต็ม)
-    const monthMap = {
-      Oct: "ตุลาคม",
-      Nov: "พฤศจิกายน",
-      Dec: "ธันวาคม",
-      Jan: "มกราคม",
-      Feb: "กุมภาพันธ์",
-      Mar: "มีนาคม",
-      Apr: "เมษายน",
-      May: "พฤษภาคม",
-      Jun: "มิถุนายน",
-      Jul: "กรกฎาคม",
-      Aug: "สิงหาคม",
-      Sep: "กันยายน",
-    };
-
-    const labels = monthOrder
-      .filter((m) => totalsByMonth[m] !== undefined)
-      .map((m) => monthMap[m]); // แปลงเป็นชื่อไทยเต็ม
-
-    const values = monthOrder
-      .filter((m) => totalsByMonth[m] !== undefined)
-      .map((m) => totalsByMonth[m]);
+    // สร้างข้อมูลสำหรับ Chart - ใช้ชื่ออำเภอแทนรหัส
+    const labels = summary.map(item => getDistrictName(item.area));
+    const resultData = summary.map(item => item.sum_result);
+    const targetData = summary.map(item => item.sum_target);
 
     setChartData({
-      labels,
+      labels: labels,
       datasets: [
         {
-          label: "ยอดรวมทั้งหมดทุก รพ.",
-          data: values,
-          borderColor: "rgba(37,99,235,1)",
-          backgroundColor: (ctx) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, "rgba(37,99,235,0.4)");
-            gradient.addColorStop(1, "rgba(37,99,235,0)");
-            return gradient;
-          },
+          label: 'ครั้ง ',
+          data: resultData,
+          borderColor: 'rgb(59, 130, 246)', // blue-500
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 3,
           tension: 0.4,
-          pointBackgroundColor: "white",
-          pointBorderColor: "rgba(37,99,235,1)",
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: 'rgb(59, 130, 246)',
+          pointBorderColor: '#fff',
           pointBorderWidth: 2,
-          pointRadius: 6,
-          pointHoverRadius: 8,
-          fill: true,
         },
-      ],
+        {
+          label: 'คน ',
+          data: targetData,
+          borderColor: 'rgb(236, 72, 153)', // pink-500
+          backgroundColor: 'rgba(236, 72, 153, 0.1)',
+          borderWidth: 3,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: 'rgb(236, 72, 153)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+        }
+      ]
     });
+
   } catch (error) {
     console.error("Error fetching data:", error);
   }
@@ -145,7 +173,7 @@ const Fetch43FileData = async (year) => {
          
               <div className="text-right">
                 <p className="text-xs text-gray-500">วันที่</p>
-                <p className="font-semibold text-gray-800">28 พฤศจิกายน 2568</p>
+               <p className="font-semibold text-gray-800">{currentDate}</p>
               </div>
             </div>
           </div>
@@ -213,7 +241,7 @@ const Fetch43FileData = async (year) => {
   <div className="flex items-center justify-between mb-4">
     <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
       <Zap className="w-6 h-6 text-yellow-500" />
-      จำนวนข้อมูลการให้บริการ (อ้างอิงตามข้อมูลในแฟ้ม service)
+      อัตราการใช้บริการผู้ป่วยนอก ทุกสิทธิ (ครั้งต่อคนต่อปี)
     </h2>
 <Select
   value={fiscalYear}
@@ -223,20 +251,11 @@ const Fetch43FileData = async (year) => {
     width: 160,
     height: 56,
   }}
-  styles={{
-    popup: {
-      root: {
-        backdropFilter: "blur(12px)",
-        background: "rgba(255, 255, 255, 0.85)",
-        borderRadius: "12px",
-        fontSize: "18px",
-      },
-    },
-  }}
 >
-    <Select.Option value="2026">ปีงบ 2569</Select.Option>
-  <Select.Option value="2025">ปีงบ 2568</Select.Option>
+  <Select.Option value="2569">ปีงบ 2569</Select.Option>
+  <Select.Option value="2568">ปีงบ 2568</Select.Option>
 </Select>
+
 
   </div>
 
