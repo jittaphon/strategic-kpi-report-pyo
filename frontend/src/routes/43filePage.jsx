@@ -37,15 +37,16 @@ const FilePage = () => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
-    return `${year}-07`;
+    return `${year}-12`;
   };
 
   const FetchDataPost = async () => {
     
     const monthStr = getCurrentMonthString();
+
     try {
       const response = await axios.get(
-        `https://api-center-hdc.moph.go.th/v1/member-upload/summary-data-daily?month=${monthStr}`,
+        `https://api-center-hdc.moph.go.th/v1/public/monitor/get-monitor-service-import?month=${monthStr}`,
         {
           headers: {
             Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
