@@ -46,7 +46,7 @@ export default function KPITeleMedV2() {
   </h1>
 
   <p className="text-[10px] font-bold  md:text-base text-red-500 mt-1">
-    หมายเหตุ : ข้อมูลรายเดือนจะประมวลผลทุกๆ วันที่ 10 ในเดือนถัดไป
+    หมายเหตุ : ข้อมูลจะประมวลผลทุกวันที่ 15 เเละ 30 ของเเต่ละเดือน
   </p>
 
   <div className="flex items-center gap-2.5 mt-3">

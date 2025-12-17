@@ -218,7 +218,7 @@ const Fetch43FileData = async (yearBE) => {
       {/* Title */}
       <p className="text-gray-600 font-semibold mb-2 flex items-center gap-2">
         <Server className="w-5 h-5 text-pink-500" /> 
-        สถานบริการ ในจังหวัดทั้งหมด
+         หน่วยบริการสุขภาพที่ส่งข้อมูล
       </p>
 
       {/* Number */}
