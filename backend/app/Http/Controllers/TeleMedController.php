@@ -187,7 +187,66 @@ class TeleMedController extends BaseController
             'error' => $e->getMessage()
         ], 500);
     }
-     }     
+     } 
+     
+     
+  public function getTeleMedClinic(Request $request)
+{
+    try {
+        $hospcode   = $request->input('hospcode');
+        $budgetYear = $request->input('budget_year');
+
+        
+      
+        $sql = "
+            SELECT 
+                a.HOSPCODE,
+                a.HOSNAME,
+                a.hippo_cliniccode,
+                a.d_name AS clinic_name,
+                COUNT(*) AS total_visit,
+                a.byear
+            FROM (
+                SELECT
+                    h.HOSPCODE,
+                    h.HOSNAME,
+                    h.byear,
+                    SUBSTR(h.CLINIC, 2, 2) AS hippo_cliniccode,
+                    k.d_name
+                FROM tb_hippoclinic h
+                LEFT JOIN tb_cliniccode k
+                    ON k.code = SUBSTR(h.CLINIC, 2, 2)
+            ) a
+            WHERE a.byear = :byear
+              AND a.HOSPCODE = :hospcode
+            GROUP BY 
+                a.HOSPCODE,
+                a.HOSNAME,
+                a.hippo_cliniccode,
+                a.d_name,
+                a.byear
+            ORDER BY a.hippo_cliniccode
+        ";
+
+        $results = DB::select($sql, [
+            'byear'    => $budgetYear,
+            'hospcode'=> $hospcode
+        ]);
+
+        return response()->json([
+            'status' => 'OK',
+            'data'   => $results
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'data' => []
+        ], 200);
+    }
+}
+
+
+
 
 
      

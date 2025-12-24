@@ -10,7 +10,11 @@ const telemedApi = {
   },
   postAppointments(payload) {
     return axiosClient.post("/api/post_data_tele_med", payload);
-}
+},
+  getClinics(hospcode, budgetYear) {  // get นั้นเเหละ
+  return axiosClient.get('/api/tele_med_clinic', { params: { hospcode :hospcode, budget_year: budgetYear } });
+},
+
 };
 
 export default telemedApi;

@@ -20,6 +20,8 @@ $router->group([
 ], function () use ($router) {
     $router->get('/tele_med', 'TeleMedController@getTeleMedData');
     $router->get('/tele_med_v2', 'TeleMedController@getTeleMedV2');
+    $router->get('/tele_med_clinic', 'TeleMedController@getTeleMedClinic');
+
 
     $router->get('/ncd_registry', 'NCDRegistryController@getNCDRegistry');
     $router->post('/post_data_ncd_registry', 'NCDRegistryController@postDataNCDRegistry');
