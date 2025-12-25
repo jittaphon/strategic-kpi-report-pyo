@@ -190,48 +190,74 @@ class TeleMedController extends BaseController
      } 
      
      
-  public function getTeleMedClinic(Request $request)
+public function getTeleMedClinic(Request $request)
 {
     try {
+        // รับค่าจากหน้าบ้าน (params ใน axios จะส่งมาใน $request->query หรือ input)
         $hospcode   = $request->input('hospcode');
         $budgetYear = $request->input('budget_year');
 
-        
-      
+        // ตรวจสอบค่าว่าง (ถ้าจำเป็น)
+        if (empty($budgetYear)) {
+            return response()->json([
+                'status' => 'Warning',
+                'message' => 'กรุณาระบุปีงบประมาณ',
+                'data' => []
+            ], 400);
+        }
+
+        // 1. ส่วน SELECT และ FROM
         $sql = "
             SELECT 
-                a.HOSPCODE,
-                a.HOSNAME,
-                a.hippo_cliniccode,
-                a.d_name AS clinic_name,
+                a.HOSPCODE, 
+                a.HOSNAME, 
+                a.hippo_cliniccode, 
+                CASE 
+                    WHEN a.d_name LIKE 'หน่วยงาน%' THEN 'ให้บริการ B2B'
+                    ELSE a.d_name 
+                END AS clinic_name, 
                 COUNT(*) AS total_visit,
+                a.DATE_SERV, 
                 a.byear
             FROM (
                 SELECT
-                    h.HOSPCODE,
-                    h.HOSNAME,
+                    h.HOSPCODE, 
+                    h.HOSNAME, 
+                    h.DATE_SERV, 
                     h.byear,
-                    SUBSTR(h.CLINIC, 2, 2) AS hippo_cliniccode,
+                    SUBSTR(h.CLINIC, 2, 2) AS hippo_cliniccode, 
                     k.d_name
-                FROM tb_hippoclinic h
-                LEFT JOIN tb_cliniccode k
-                    ON k.code = SUBSTR(h.CLINIC, 2, 2)
-            ) a
+                FROM tb_hippoclinic AS h
+                LEFT JOIN tb_cliniccode AS k ON k.code = SUBSTR(h.CLINIC, 2, 2)
+            ) AS a 
             WHERE a.byear = :byear
-              AND a.HOSPCODE = :hospcode
-            GROUP BY 
-                a.HOSPCODE,
-                a.HOSNAME,
-                a.hippo_cliniccode,
-                a.d_name,
-                a.byear
-            ORDER BY a.hippo_cliniccode
         ";
 
-        $results = DB::select($sql, [
-            'byear'    => $budgetYear,
-            'hospcode'=> $hospcode
-        ]);
+        $params = ['byear' => $budgetYear];
+
+        // 2. เงื่อนไขเพิ่มเติม: ตรวจสอบ HOSPCODE
+        if (!empty($hospcode) && $hospcode !== 'null') {
+            $sql .= " AND a.HOSPCODE = :hospcode ";
+            $params['hospcode'] = $hospcode;
+        }
+
+        // 3. ปิดท้ายด้วย Group By และ Order By
+        $sql .= "
+            GROUP BY 
+                a.HOSPCODE, 
+                a.HOSNAME, 
+                a.hippo_cliniccode,
+                CASE 
+                    WHEN a.d_name LIKE 'หน่วยงาน%' THEN 'ให้บริการ B2B'
+                    ELSE a.d_name 
+                END,
+                a.byear, 
+                a.DATE_SERV 
+            ORDER BY a.DATE_SERV ASC
+        ";
+
+        // ประมวลผลคำสั่ง SQL
+        $results = DB::select($sql, $params);
 
         return response()->json([
             'status' => 'OK',
@@ -240,14 +266,11 @@ class TeleMedController extends BaseController
 
     } catch (\Exception $e) {
         return response()->json([
+            'status' => 'Error',
+            'message' => $e->getMessage(),
             'data' => []
-        ], 200);
+        ], 500);
     }
 }
-
-
-
-
-
      
 }

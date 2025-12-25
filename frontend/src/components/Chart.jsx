@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import * as Chart from "chart.js";
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 // Register Chart.js components
 const { Chart: ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, BarController, LineController } = Chart;
@@ -14,51 +15,30 @@ ChartJS.register(
   Tooltip,
   Legend,
   BarController,
-  LineController
+  LineController,
+  ChartDataLabels  // เพิ่ม plugin
 );
 
-// ชื่อเดือนแบบปีงบไทย
-const monthNames = {
-  "10": "ต.ค.",
-  "11": "พ.ย.",
-  "12": "ธ.ค.",
-  "01": "ม.ค.",
-  "02": "ก.พ.",
-  "03": "มี.ค.",
-  "04": "เม.ย.",
-  "05": "พ.ค.",
-  "06": "มิ.ย.",
-  "07": "ก.ค.",
-  "08": "ส.ค.",
-  "09": "ก.ย.",
-};
+// HOSPCODE ที่ต้องแสดงก่อนเสมอ
+const priorityHospCodes = ['10717', '10718', '11185', '11186', '11187', '11188', '40744', '40745'];
 
-// ลำดับเรียงตามปีงบ
-const fiscalOrder = [
-  "ต.ค.", "พ.ย.", "ธ.ค.", "ม.ค.", "ก.พ.", "มี.ค.",
-  "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย."
-];
-
-// PIVOT: แปลงแถวละเดือน → แถวเดียวรวมทั้งปี
-function pivotData(raw) {
+// รวมข้อมูลแต่ละโรงพยาบาล
+function aggregateData(raw) {
   const map = {};
+  
   raw.forEach(row => {
     const hosp = row.HOSPCODE;
-    const month = row.month.padStart(2, "0");
-    const mName = monthNames[month];
     
     if (!map[hosp]) {
       map[hosp] = {
         HOSPCODE: row.HOSPCODE,
         HOSNAME: row.HOSNAME,
         hospitalDisplay: `${row.HOSPCODE} - ${row.HOSNAME}`,
-        months: {},
         total: 0
       };
     }
     
-    const value = parseInt(String(row.cnt).trim(), 10) || 0;
-    map[hosp].months[mName] = value;
+    const value = parseInt(row.total_visit, 10) || 0;
     map[hosp].total += value;
   });
   
@@ -75,6 +55,10 @@ const colors = [
   { bg: 'rgba(234, 179, 8, 0.8)', border: 'rgb(234, 179, 8)' },
   { bg: 'rgba(239, 68, 68, 0.8)', border: 'rgb(239, 68, 68)' },
   { bg: 'rgba(6, 182, 212, 0.8)', border: 'rgb(6, 182, 212)' },
+  { bg: 'rgba(168, 85, 247, 0.8)', border: 'rgb(168, 85, 247)' },
+  { bg: 'rgba(244, 63, 94, 0.8)', border: 'rgb(244, 63, 94)' },
+  { bg: 'rgba(34, 197, 94, 0.8)', border: 'rgb(34, 197, 94)' },
+  { bg: 'rgba(249, 115, 22, 0.8)', border: 'rgb(249, 115, 22)' },
 ];
 
 export default function HospitalChart({ data }) {
@@ -83,9 +67,22 @@ export default function HospitalChart({ data }) {
 
   const mappedData = useMemo(() => {
     if (!data) return [];
-    const pivoted = pivotData(data);
-    // เรียงจากมากไปน้อย
-    return pivoted.sort((a, b) => b.total - a.total);
+    const aggregated = aggregateData(data);
+    
+    // เรียงลำดับ: priority hospitals ก่อน, แล้วเรียงตาม total
+    return aggregated.sort((a, b) => {
+      const aIsPriority = priorityHospCodes.includes(a.HOSPCODE);
+      const bIsPriority = priorityHospCodes.includes(b.HOSPCODE);
+      
+      if (aIsPriority && bIsPriority) {
+        return b.total - a.total;
+      }
+      
+      if (aIsPriority) return -1;
+      if (bIsPriority) return 1;
+      
+      return b.total - a.total;
+    });
   }, [data]);
 
   useEffect(() => {
@@ -98,7 +95,7 @@ export default function HospitalChart({ data }) {
 
     const ctx = chartRef.current.getContext("2d");
 
-    // เตรียมข้อมูล: แสดงเฉพาะ total ของแต่ละโรงพยาบาล
+    // เตรียมข้อมูล
     const labels = mappedData.map(h => h.hospitalDisplay);
     const totals = mappedData.map(h => h.total);
     const backgroundColors = mappedData.map((_, idx) => colors[idx % colors.length].bg);
@@ -157,9 +154,11 @@ export default function HospitalChart({ data }) {
             formatter: (value) => value.toLocaleString(),
             font: {
               weight: 'bold',
-              size: 12
+              size: 13,
+              family: "'Inter', sans-serif"
             },
-            color: '#1e40af'
+            color: '#1e40af',
+            offset: 4
           }
         },
         scales: {
@@ -175,7 +174,7 @@ export default function HospitalChart({ data }) {
             },
             title: {
               display: true,
-              text: "จำนวนบริการเเพทย์ทางไกล (ครั้ง)",
+              text: "จำนวนบริการแพทย์ทางไกล (ครั้ง)",
               font: {
                 size: 14,
                 weight: "bold"
@@ -205,9 +204,13 @@ export default function HospitalChart({ data }) {
               display: false
             }
           }
+        },
+        layout: {
+          padding: {
+            top: 30  // เพิ่มพื้นที่ด้านบนให้ตัวเลข
+          }
         }
       },
-    
     });
 
     return () => {
@@ -232,18 +235,11 @@ export default function HospitalChart({ data }) {
     );
   }
 
-  
-  const totalAll = mappedData.reduce((sum, h) => sum + h.total, 0);
-
-
   return (
     <div className="w-full">
-      {/* Chart */}
-      <div className="bg-white p-6" style={{ height: "600px" }}>
+      <div className="bg-white p-6 rounded-xl shadow-lg" style={{ height: "600px" }}>
         <canvas ref={chartRef}></canvas>
       </div>
-
-      
     </div>
   );
 }
