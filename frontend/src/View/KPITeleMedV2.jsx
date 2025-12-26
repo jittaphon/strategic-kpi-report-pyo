@@ -7,7 +7,7 @@ import Table from '../components/Table';
 import Chart from '../components/Chart';
 
 export default function KPITeleMedV2() {
-  const [year, setYear] = useState("2025");
+  const [year, setYear] = useState("2026");
   const [baseData, setBaseData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -63,15 +63,15 @@ export default function KPITeleMedV2() {
         <div className="bg-white/80 backdrop-blur-md rounded-xl border border-blue-200/50 p-4 md:p-5 mb-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full shadow-lg shadow-blue-500/30" />
-            <h3 className="text-sm md:text-base font-semibold bg-gradient-to-r from-blue-700 to-cyan-700 bg-clip-text text-transparent">
+            <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-700 to-cyan-700 bg-clip-text text-transparent">
               ตัวกรอง
             </h3>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-gray-700 font-medium text-xs md:text-sm">
-                ปีงบประมาณ
+              <span className="text-gray-700 font-medium text-lg ">
+                ปีงบประมาณ 
               </span>
               <Select
                 value={year}
@@ -83,9 +83,9 @@ export default function KPITeleMedV2() {
                 <Select.Option value="2026">2569</Select.Option>
                 <Select.Option value="2025">2568</Select.Option>
               </Select>
-            </div>
-
            
+            </div>
+            
           </div>
         </div>
 
@@ -96,9 +96,9 @@ export default function KPITeleMedV2() {
             {/* Table Header */}
             <div className="flex items-center gap-3 mb-4 pb-3 border-b border-blue-200/50">
               <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full shadow-lg shadow-blue-500/30" />
-              <h2 className="text-base md:text-lg font-semibold bg-gradient-to-r from-blue-700 to-cyan-700 bg-clip-text text-transparent">
-                ข้อมูลรายงาน
-              </h2>
+            <h2 className="text-lg font-semibold bg-gradient-to-r from-blue-700 to-cyan-700 bg-clip-text text-transparent">
+  ข้อมูลรายงาน <span className="text-red-500 font-normal ml-1">(คลิกที่ชื่อโรงพยาบาลเพื่อดูรายชื่อคลินิกที่ให้บริการTelemedicine)</span>
+</h2>
               {loading && (
                 <div className="ml-auto flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />

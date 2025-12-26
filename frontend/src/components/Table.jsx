@@ -23,11 +23,14 @@ const fiscalOrder = [
   "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.",
 ];
 
+// ลำดับที่ต้องการให้แสดง (เรียงจากบนลงล่างตามนี้)
+const priorityHospCodes = [
+  '10717', '10718', '11184', '11185', '11186', 
+  '11187', '11188', '40744', '40745'
+];
+
 /* =================== HELPER FUNCTIONS =================== */
 
-/**
- * จัดกลุ่มข้อมูลดิบจาก API เป็นรายโรงพยาบาลและแยกเดือน
- */
 function pivotData(raw) {
   if (!raw || !Array.isArray(raw)) return [];
   const map = {};
@@ -59,9 +62,6 @@ function pivotData(raw) {
   return Object.values(map);
 }
 
-/**
- * จัดกลุ่มข้อมูลคลินิกภายในโรงพยาบาล
- */
 function pivotClinicData(clinicRaw) {
   if (!clinicRaw || !Array.isArray(clinicRaw)) return [];
   const map = {};
@@ -91,68 +91,37 @@ function pivotClinicData(clinicRaw) {
 /* =================== SUB TABLE COMPONENT =================== */
 
 function ClinicSubTable({ clinics, isLoading, hospitalName }) {
-
-
-  
-  // เรียงลำดับคลินิก
   const sortedClinics = [...clinics].sort((a, b) => {
-    const bottomItems = ['ให้บริการ B2B', 'อื่นๆ'];
-    
+    const bottomItems = ['ให้บริการ B2B'];
     const aIsBottom = bottomItems.includes(a.clinicDisplay);
     const bIsBottom = bottomItems.includes(b.clinicDisplay);
-    
-    // ถ้าทั้งคู่เป็น bottom items ให้เรียงตาม total
-    if (aIsBottom && bIsBottom) {
-      return b.total - a.total;
-    }
-    
-    // ถ้า a เป็น bottom item ให้ไปอยู่ท้าย
+    if (aIsBottom && bIsBottom) return b.total - a.total;
     if (aIsBottom) return 1;
-    
-    // ถ้า b เป็น bottom item ให้ไปอยู่ท้าย
     if (bIsBottom) return -1;
-    
-    // คลินิกปกติเรียงตาม total จากมากไปน้อย
     return b.total - a.total;
   });
-  
+
+  if (isLoading) {
+    return (
+      <div className="p-10 flex justify-center items-center bg-gray-50">
+        <Loader2 className="animate-spin text-blue-500" size={30} />
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, maxHeight: 0 }}
-      animate={{ 
-        opacity: 1, 
-        maxHeight: 2000,
-        transition: {
-          maxHeight: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-          opacity: { duration: 0.5, delay: 0.1 }
-        }
-      }}
-      exit={{ 
-        opacity: 0, 
-        maxHeight: 0,
-        transition: {
-          maxHeight: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-          opacity: { duration: 0.3 }
-        }
-      }}
+      animate={{ opacity: 1, maxHeight: 2000 }}
+      exit={{ opacity: 0, maxHeight: 0 }}
       className="overflow-hidden"
     >
       <div className="p-6 bg-gray-50/50 border-y border-blue-100">
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-center gap-2 mb-4 text-[13px] font-bold text-[#2B59FF]"
-        >
+        <div className="flex items-center gap-2 mb-4 text-[13px] font-bold text-[#2B59FF]">
           <span className="w-1.5 h-4 bg-[#2B59FF] rounded-full"></span>
           CLINIC : {hospitalName}
-        </motion.div>
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-xl border border-blue-100 overflow-hidden shadow-sm bg-white"
-        >
+        </div>
+        <div className="rounded-xl border border-blue-100 overflow-hidden shadow-sm bg-white">
           <table className="w-full border-collapse">
             <thead className="bg-blue-50/50">
               <tr className="border-b border-blue-100">
@@ -165,17 +134,7 @@ function ClinicSubTable({ clinics, isLoading, hospitalName }) {
             </thead>
             <tbody>
               {sortedClinics.map((c, i) => (
-                <motion.tr
-                  key={i}
-                  initial={{ opacity: 0, x: -15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ 
-                    duration: 0.4,
-                    delay: 0.3 + (i * 0.03),
-                    ease: [0.22, 1, 0.36, 1]
-                  }}
-                  className="border-b border-blue-50 hover:bg-blue-100/100 last:border-0 transition-colors"
-                >
+                <tr key={i} className="border-b border-blue-50 hover:bg-blue-100/100 last:border-0 transition-colors">
                   <td className="px-4 py-2.5 text-[15px] text-gray-700 font-medium">{c.clinicDisplay}</td>
                   <td className="px-2 py-2.5 text-center text-[15px] font-bold text-[#2B59FF] bg-blue-100/50">
                     {c.total.toLocaleString()}
@@ -185,65 +144,59 @@ function ClinicSubTable({ clinics, isLoading, hospitalName }) {
                       {c.months[m] ? c.months[m].toLocaleString() : "0"}
                     </td>
                   ))}
-                </motion.tr>
+                </tr>
               ))}
             </tbody>
           </table>
-        </motion.div>
+        </div>
       </div>
     </motion.div>
   );
 }
+
 /* =================== MAIN TABLE COMPONENT =================== */
 
 export default function Table({ data, fiscalYear, loading: mainLoading }) {
   const columnHelper = createColumnHelper();
   
-  const [sorting, setSorting] = useState([{ id: "total", desc: true }]);
+  // ตั้งค่า sorting เป็นว่างเพื่อให้ลำดับ Priority ที่เราเขียนไว้ใน mappedData ทำงานก่อน
+  const [sorting, setSorting] = useState([]); 
   const [expanded, setExpanded] = useState({});
   const [clinicData, setClinicData] = useState([]);
   const [loadingClinic, setLoadingClinic] = useState(false);
 
-  const priorityHospCodes = ['10717', '10718', '11184', '11185', '11186', '11187', '11188', '40744', '40745'];
-
+  // 1. จัดการเรียงลำดับข้อมูลดิบ
   const mappedData = useMemo(() => {
     const pivoted = pivotData(data);
     
     return pivoted.sort((a, b) => {
-      const aIsPriority = priorityHospCodes.includes(a.HOSPCODE);
-      const bIsPriority = priorityHospCodes.includes(b.HOSPCODE);
+      const aIdx = priorityHospCodes.indexOf(a.HOSPCODE);
+      const bIdx = priorityHospCodes.indexOf(b.HOSPCODE);
+
+      // ถ้าทั้งคู่เป็น Priority ให้เรียงตาม Index ใน Array เป๊ะๆ
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
       
-      if (aIsPriority && bIsPriority) {
-        return b.total - a.total;
-      }
+      // ถ้า a เป็น Priority ให้ขึ้นก่อน
+      if (aIdx !== -1) return -1;
+      // ถ้า b เป็น Priority ให้ขึ้นก่อน
+      if (bIdx !== -1) return 1;
       
-      if (aIsPriority) return -1;
-      if (bIsPriority) return 1;
-      
+      // ถ้าไม่ใช่ทั้งคู่ เรียงตาม total จากมากไปน้อย
       return b.total - a.total;
     });
   }, [data]);
   
   const processedClinics = useMemo(() => pivotClinicData(clinicData), [clinicData]);
 
-  // คำนวณผลรวมทั้งหมด
   const totals = useMemo(() => {
-    const result = {
-      total: 0,
-      months: {}
-    };
-    
-    fiscalOrder.forEach(m => {
-      result.months[m] = 0;
-    });
-    
+    const result = { total: 0, months: {} };
+    fiscalOrder.forEach(m => { result.months[m] = 0; });
     mappedData.forEach(row => {
       result.total += row.total;
       fiscalOrder.forEach(m => {
         result.months[m] += (row.months[m] || 0);
       });
     });
-    
     return result;
   }, [mappedData]);
 
@@ -275,7 +228,7 @@ export default function Table({ data, fiscalYear, loading: mainLoading }) {
             {canExpand ? (
               <motion.span 
                 animate={{ rotate: expanded[row.id] ? 0 : -90 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.5 }}
                 className="text-[10px] text-blue-500"
               >
                 ▼
@@ -329,19 +282,22 @@ export default function Table({ data, fiscalYear, loading: mainLoading }) {
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    // 2. ปรับ Sorting Function ของ Table ให้ Priority ขึ้นก่อนเสมอแม้จะกด Sort หัวตาราง
     sortingFns: {
       auto: (rowA, rowB, columnId) => {
-        const aHospcode = rowA.original.HOSPCODE;
-        const bHospcode = rowB.original.HOSPCODE;
-        const aIsPriority = priorityHospCodes.includes(aHospcode);
-        const bIsPriority = priorityHospCodes.includes(bHospcode);
-        
-        if (aIsPriority && !bIsPriority) return -1;
-        if (!aIsPriority && bIsPriority) return 1;
-        
-        const aValue = rowA.getValue(columnId);
-        const bValue = rowB.getValue(columnId);
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        const aIdx = priorityHospCodes.indexOf(rowA.original.HOSPCODE);
+        const bIdx = priorityHospCodes.indexOf(rowB.original.HOSPCODE);
+
+        // ถ้าอยู่ใน List Priority ทั้งคู่ ให้เรียงตาม Index
+        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+        // ถ้าตัวหนึ่งเป็น Priority ให้ลอยขึ้นบน
+        if (aIdx !== -1) return -1;
+        if (bIdx !== -1) return 1;
+
+        // แถวปกติเรียงตามค่าจริง
+        const aVal = rowA.getValue(columnId);
+        const bVal = rowB.getValue(columnId);
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
       }
     }
   });
@@ -364,17 +320,16 @@ export default function Table({ data, fiscalYear, loading: mainLoading }) {
         </thead>
         <tbody className="divide-y divide-gray-100">
           {table.getRowModel().rows.map((row, rowIndex) => {
-            const canExpand = priorityHospCodes.includes(row.original.HOSPCODE);
-            
+            const isPriority = priorityHospCodes.includes(row.original.HOSPCODE);
             return (
               <Fragment key={row.id}>
                 <tr 
                   className={`group transition-all duration-200 
-                    ${canExpand ? 'cursor-pointer hover:bg-blue-100/100' : 'cursor-default'}
+                    ${isPriority ? 'cursor-pointer hover:bg-blue-100/100' : 'cursor-default'}
                     ${expanded[row.id] ? 'bg-blue-200/60 border-l-4 border-l-blue-600' : rowIndex % 2 === 0 ? 'bg-white' : 'bg-blue-50/20'}
                   `}
                   onClick={() => {
-                    if (!canExpand) return;
+                    if (!isPriority) return;
                     const isExp = !!expanded[row.id];
                     setExpanded({ [row.id]: !isExp });
                     if (!isExp) fetchClinics(row.original.HOSPCODE);
@@ -386,9 +341,8 @@ export default function Table({ data, fiscalYear, loading: mainLoading }) {
                     </td>
                   ))}
                 </tr>
-
                 <AnimatePresence>
-                  {expanded[row.id] && canExpand && (
+                  {expanded[row.id] && isPriority && (
                     <tr>
                       <td colSpan={columns.length} className="p-0 border-b border-blue-100">
                         <ClinicSubTable 
@@ -404,13 +358,9 @@ export default function Table({ data, fiscalYear, loading: mainLoading }) {
             );
           })}
         </tbody>
-        
-        {/* แถวรวม */}
         <tfoot className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white font-bold">
           <tr>
-            <td className="px-4 py-5 text-left text-[17px] border-r border-white/10">
-              รวมทั้งหมด
-            </td>
+            <td className="px-4 py-5 text-left text-[17px] border-r border-white/10">รวมทั้งหมด</td>
             <td className="px-4 py-5 text-center border-r border-white/10">
               <span className="inline-block bg-white/20 px-4 py-1 rounded-lg text-[17px]">
                 {totals.total.toLocaleString()}
